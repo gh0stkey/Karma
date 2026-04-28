@@ -122,4 +122,4 @@ make all
 
 ## 致谢
 
-- [Handy](https://github.com/cjpais/Handy) - Tauri + MLX Sidecar 架构的灵感来源
+- [Handy](https://github.com/cjpais/Handy)

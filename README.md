@@ -122,4 +122,4 @@ make all
 
 ## Acknowledgements
 
-- [Handy](https://github.com/cjpais/Handy) - Inspiration for the Tauri + MLX sidecar architecture
+- [Handy](https://github.com/cjpais/Handy)
