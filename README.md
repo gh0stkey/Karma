@@ -111,11 +111,11 @@ make all
 
 ## Interface
 
-| Page | Description |
-|------|-------------|
-| Redactor | Input text, detect PII, view redacted output and detected spans |
-| Model | Configure model path, view loaded model metadata |
-| Server | Enable/configure HTTP API server, view API reference and request logs |
-| History | Browse past redaction records with search and pagination |
-| Settings | Global shortcut, language, auto-copy, history limit, and more |
-| About | Version info and tech stack credits |
+| Page | Description | Screenshot |
+|------|-------------|------------|
+| Redactor | Input text, detect PII, view redacted output and detected spans | <img src="images/redactor.png" style="width: 80%" /> |
+| Model | Configure model path, view loaded model metadata | <img src="images/model.png" style="width: 80%" /> |
+| Server | Enable/configure HTTP API server, view API reference and request logs | <img src="images/server.png" style="width: 80%" /> |
+| History | Browse past redaction records with copy and delete actions | <img src="images/history.png" style="width: 80%" /> |
+| Settings | Global shortcut, language, auto-copy, history limit, and more | <img src="images/settings.png" style="width: 80%" /> |
+| About | Version info and tech stack credits | <img src="images/about.png" style="width: 80%" /> |

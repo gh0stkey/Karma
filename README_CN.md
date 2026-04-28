@@ -111,11 +111,11 @@ make all
 
 ## 界面说明
 
-| 页面 | 说明 |
-|------|------|
-| 脱敏 | 输入文本，检测 PII，查看脱敏结果和检测到的实体 |
-| 模型 | 配置模型路径，查看已加载模型的元数据 |
-| 服务 | 启用/配置 HTTP API 服务器，查看 API 文档和请求日志 |
-| 历史 | 浏览历史脱敏记录，支持分页 |
-| 设置 | 全局快捷键、语言、自动复制、历史上限等 |
-| 关于 | 版本信息和技术栈说明 |
+| 页面 | 说明 | 截图 |
+|------|------|------|
+| 脱敏 | 输入文本，检测 PII，查看脱敏结果和检测到的实体 | <img src="images/redactor.png" style="width: 80%" /> |
+| 模型 | 配置模型路径，查看已加载模型的元数据 | <img src="images/model.png" style="width: 80%" /> |
+| 服务 | 启用/配置 HTTP API 服务器，查看 API 文档和请求日志 | <img src="images/server.png" style="width: 80%" /> |
+| 历史 | 浏览历史脱敏记录，支持复制和删除 | <img src="images/history.png" style="width: 80%" /> |
+| 设置 | 全局快捷键、语言、自动复制、历史上限等 | <img src="images/settings.png" style="width: 80%" /> |
+| 关于 | 版本信息和技术栈说明 | <img src="images/about.png" style="width: 80%" /> |
