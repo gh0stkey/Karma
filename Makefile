@@ -62,10 +62,3 @@ sidecar-dev:
 	@echo 'cd "$(CURDIR)/$(SIDECAR_SRC)" && UV_PROJECT_FILE=$(PYPROJECT) uv run python -m $(SIDECAR_PKG) "$$@"' >> $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@chmod +x $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@echo "==> Dev wrapper: $(BINARIES_DIR)/$(SIDECAR_NAME)"
-
-.PHONY: export-onnx
-export-onnx:
-	@echo "==> Exporting ONNX model..."
-	pip install optimum[exporters] onnx onnxruntime transformers
-	python scripts/export_onnx.py openai-community/openai-privacy-filter ./onnx-model/
-	@echo "==> ONNX model exported to ./onnx-model/"
