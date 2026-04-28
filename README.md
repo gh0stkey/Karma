@@ -53,6 +53,10 @@ Download the latest `.dmg` from the [Releases](https://github.com/gh0stkey/Karma
 
 ## Usage
 
+### Model Download
+
+Download the MLX model from: [mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16)
+
 ### Quick Start
 
 1. Open Karma and navigate to the **Model** page

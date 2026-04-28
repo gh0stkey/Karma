@@ -53,6 +53,10 @@ Karma 可识别文本中 **9 种类型的 PII** 并替换为标签占位符：
 
 ## 使用方法
 
+### 模型下载
+
+从 HuggingFace 下载 MLX 模型：[mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16)
+
 ### 快速开始
 
 1. 打开 Karma，进入 **模型** 页面
