@@ -1,0 +1,149 @@
+{
+  "app": {
+    "name": "Karma",
+    "description": "PII 检测与脱敏"
+  },
+  "sidebar": {
+    "redactor": "脱敏",
+    "model": "模型",
+    "server": "服务",
+    "history": "历史",
+    "settings": "设置",
+    "about": "关于"
+  },
+  "redactor": {
+    "title": "脱敏",
+    "inputPlaceholder": "输入要脱敏的文本...",
+    "redactButton": "脱敏",
+    "clearButton": "清空",
+    "copyButton": "复制",
+    "copied": "已复制!",
+    "resultTitle": "脱敏结果",
+    "outputTitle": "输出",
+    "spansTitle": "PII",
+    "noSpans": "未检测到 PII",
+    "latency": "{{ms}}ms",
+    "detected": "检测到 {{count}} 项 PII",
+    "detectedItems": "项已检测",
+    "shortcut": "Cmd+Enter"
+  },
+  "model": {
+    "info": {
+      "title": "模型信息",
+      "name": "名称",
+      "architecture": "架构",
+      "hiddenSize": "隐藏层大小",
+      "vocabSize": "词汇表大小",
+      "maxPosition": "最大位置",
+      "numLabels": "标签数"
+    },
+    "status": {
+      "title": "状态",
+      "not_found": "未找到",
+      "ready": "就绪",
+      "loading": "加载中...",
+      "loaded": "已加载",
+      "error": "错误"
+    },
+    "reload": "重新加载",
+    "config": {
+      "title": "配置",
+      "path": "模型路径",
+      "pathDesc": "MLX 模型目录路径",
+      "browse": "浏览",
+      "pathPlaceholder": "点击浏览选择模型目录"
+    }
+  },
+  "server": {
+    "config": "配置",
+    "enable": "启用 HTTP 服务",
+    "enableDesc": "启动 HTTP 服务以暴露脱敏 API",
+    "autoStart": "随应用启动",
+    "autoStartDesc": "应用启动时自动启动服务",
+    "host": "监听地址",
+    "hostDesc": "监听的网络接口",
+    "port": "端口",
+    "portDesc": "HTTP 服务的 TCP 端口号",
+    "status": {
+      "title": "状态",
+      "running": "运行中",
+      "stopped": "已停止",
+      "uptime": "运行时间",
+      "requests": "已处理请求"
+    },
+    "apiRef": {
+      "title": "API 参考",
+      "health": "健康检查",
+      "redact": "文本脱敏"
+    },
+    "httpLog": {
+      "title": "HTTP 日志",
+      "empty": "暂无请求记录",
+      "request": "请求",
+      "response": "响应",
+      "clear": "清空"
+    }
+  },
+  "history": {
+    "title": "脱敏历史",
+    "empty": "暂无记录",
+    "loading": "加载中...",
+    "input": "输入",
+    "output": "输出",
+    "copy": "复制",
+    "delete": "删除",
+    "clear": "清空"
+  },
+  "footer": {
+    "model": "模型"
+  },
+  "settings": {
+    "general": {
+      "title": "通用",
+      "language": "语言",
+      "languageDesc": "界面显示语言",
+      "shortcut": {
+        "title": "全局快捷键",
+        "description": "打开 Karma 并进入脱敏界面",
+        "pressKeys": "请按下快捷键...",
+        "errors": {
+          "set": "设置快捷键失败: {{error}}"
+        }
+      }
+    },
+    "redaction": {
+      "title": "脱敏",
+      "autoCopy": "自动复制结果",
+      "autoCopyDesc": "自动将脱敏文本复制到剪贴板",
+      "saveHistory": "保存历史",
+      "saveHistoryDesc": "记录脱敏操作历史",
+      "historyLimit": "历史上限",
+      "historyLimitDesc": "最多保留的历史记录数"
+    },
+    "server": {
+      "title": "服务",
+      "logLimit": "HTTP 日志上限",
+      "logLimitDesc": "最多保留的 HTTP 日志条数"
+    },
+    "storage": {
+      "title": "存储",
+      "dataDir": "应用数据目录",
+      "dataDirDesc": "设置、数据库和模型缓存的存储位置",
+      "logDir": "日志目录",
+      "logDirDesc": "应用日志的存储位置",
+      "open": "打开"
+    }
+  },
+  "about": {
+    "title": "关于",
+    "tagline": "本地 PII 检测与脱敏",
+    "poweredBy": "技术栈",
+    "tech": {
+      "mlx": "Apple Silicon 机器学习框架",
+      "tauri": "轻量级桌面运行时",
+      "mlxEmbeddings": "Token 分类引擎",
+      "react": "前端 UI 框架"
+    },
+    "credit": "为隐私而生。"
+  }
+}

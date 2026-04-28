@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+dist/
+target/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tauri
+src-tauri/target/
+
+# Sidecar — PyInstaller build artifacts
+src-tauri/sidecar-src/dist/
+src-tauri/sidecar-src/build/
+src-tauri/sidecar-src/*.spec
+src-tauri/sidecar-src/.venv/
+src-tauri/sidecar-src/opf_mlx/__pycache__/
+
+# Sidecar binary (built by `make sidecar`, not committed)
+src-tauri/binaries/
+
+# Env
+.env
+.env.local

@@ -1,0 +1,149 @@
+{
+  "app": {
+    "name": "Karma",
+    "description": "PII Detection & Redaction"
+  },
+  "sidebar": {
+    "redactor": "Redactor",
+    "model": "Model",
+    "server": "Server",
+    "history": "History",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "redactor": {
+    "title": "Redactor",
+    "inputPlaceholder": "Enter text to redact...",
+    "redactButton": "Redact",
+    "clearButton": "Clear",
+    "copyButton": "Copy",
+    "copied": "Copied!",
+    "resultTitle": "Redacted Result",
+    "outputTitle": "Output",
+    "spansTitle": "PII",
+    "noSpans": "No PII detected",
+    "latency": "{{ms}}ms",
+    "detected": "Detected {{count}} PII items",
+    "detectedItems": "items detected",
+    "shortcut": "Cmd+Enter"
+  },
+  "model": {
+    "info": {
+      "title": "Model Info",
+      "name": "Name",
+      "architecture": "Architecture",
+      "hiddenSize": "Hidden Size",
+      "vocabSize": "Vocab Size",
+      "maxPosition": "Max Position",
+      "numLabels": "Num Labels"
+    },
+    "status": {
+      "title": "Status",
+      "not_found": "Not Found",
+      "ready": "Ready",
+      "loading": "Loading...",
+      "loaded": "Loaded",
+      "error": "Error"
+    },
+    "reload": "Reload",
+    "config": {
+      "title": "Configuration",
+      "path": "Model Path",
+      "pathDesc": "Path to the MLX model directory",
+      "browse": "Browse",
+      "pathPlaceholder": "Click Browse to select model directory"
+    }
+  },
+  "server": {
+    "config": "Configuration",
+    "enable": "Enable HTTP Server",
+    "enableDesc": "Start an HTTP server to expose the redaction API",
+    "autoStart": "Start on Launch",
+    "autoStartDesc": "Automatically start the server when the app launches",
+    "host": "Listen Address",
+    "hostDesc": "Network interface to listen on",
+    "port": "Port",
+    "portDesc": "TCP port number for the HTTP server",
+    "status": {
+      "title": "Status",
+      "running": "Running",
+      "stopped": "Stopped",
+      "uptime": "Uptime",
+      "requests": "Requests Served"
+    },
+    "apiRef": {
+      "title": "API Reference",
+      "health": "Health check",
+      "redact": "Redact text"
+    },
+    "httpLog": {
+      "title": "HTTP Log",
+      "empty": "No requests recorded",
+      "request": "Request",
+      "response": "Response",
+      "clear": "Clear"
+    }
+  },
+  "history": {
+    "title": "Redaction History",
+    "empty": "No history yet",
+    "loading": "Loading...",
+    "input": "Input",
+    "output": "Output",
+    "copy": "Copy",
+    "delete": "Delete",
+    "clear": "Clear"
+  },
+  "footer": {
+    "model": "Model"
+  },
+  "settings": {
+    "general": {
+      "title": "General",
+      "language": "Language",
+      "languageDesc": "Interface display language",
+      "shortcut": {
+        "title": "Global Shortcut",
+        "description": "Open Karma and go to Redactor",
+        "pressKeys": "Press keys...",
+        "errors": {
+          "set": "Failed to set shortcut: {{error}}"
+        }
+      }
+    },
+    "redaction": {
+      "title": "Redaction",
+      "autoCopy": "Auto-copy Result",
+      "autoCopyDesc": "Automatically copy redacted text to clipboard",
+      "saveHistory": "Save History",
+      "saveHistoryDesc": "Keep a record of redaction operations",
+      "historyLimit": "History Limit",
+      "historyLimitDesc": "Maximum number of history entries to keep"
+    },
+    "server": {
+      "title": "Server",
+      "logLimit": "HTTP Log Limit",
+      "logLimitDesc": "Maximum number of HTTP log entries to keep"
+    },
+    "storage": {
+      "title": "Storage",
+      "dataDir": "App Data Directory",
+      "dataDirDesc": "Where settings, database and model cache are stored",
+      "logDir": "Log Directory",
+      "logDirDesc": "Where application logs are stored",
+      "open": "Open"
+    }
+  },
+  "about": {
+    "title": "About",
+    "tagline": "On-device PII detection & redaction",
+    "poweredBy": "Powered by",
+    "tech": {
+      "mlx": "Apple Silicon ML framework",
+      "tauri": "Lightweight desktop runtime",
+      "mlxEmbeddings": "Token classification engine",
+      "react": "Frontend UI framework"
+    },
+    "credit": "Built with care for privacy."
+  }
+}
