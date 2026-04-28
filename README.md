@@ -8,7 +8,7 @@ README Version: \[[English](README.md) | [简体中文](README_CN.md)\]
 
 ## Project Introduction
 
-**Karma** is essentially a GUI wrapper around [OpenAI's Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) model, packaged as a native macOS desktop application. Powered by Apple's MLX framework, all AI inference runs entirely on-device — your data never leaves your machine.
+**Karma** is a privacy-first desktop application for detecting and redacting Personally Identifiable Information (PII), based on [OpenAI Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) model. Powered by Apple's MLX framework, all AI inference runs entirely on-device — your data never leaves your machine.
 
 Karma identifies **9 types of PII** in text and replaces them with labeled placeholders:
 
