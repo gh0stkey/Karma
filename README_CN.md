@@ -119,3 +119,7 @@ make all
 | 历史 | 浏览历史脱敏记录，支持复制和删除 | <img src="images/history.png" style="width: 80%" /> |
 | 设置 | 全局快捷键、语言、自动复制、历史上限等 | <img src="images/settings.png" style="width: 80%" /> |
 | 关于 | 版本信息和技术栈说明 | <img src="images/about.png" style="width: 80%" /> |
+
+## 致谢
+
+- [Handy](https://github.com/cjpais/Handy) - Tauri + MLX Sidecar 架构的灵感来源

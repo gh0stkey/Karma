@@ -119,3 +119,7 @@ make all
 | History | Browse past redaction records with copy and delete actions | <img src="images/history.png" style="width: 80%" /> |
 | Settings | Global shortcut, language, auto-copy, history limit, and more | <img src="images/settings.png" style="width: 80%" /> |
 | About | Version info and tech stack credits | <img src="images/about.png" style="width: 80%" /> |
+
+## Acknowledgements
+
+- [Handy](https://github.com/cjpais/Handy) - Inspiration for the Tauri + MLX sidecar architecture
