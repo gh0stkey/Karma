@@ -1,6 +1,6 @@
 <div align="center">
 <img src="src-tauri/icons/logo.png" style="width: 20%" />
-<h4><a href="https://github.com/gh0stkey/Karma">本地化 PII 检测与脱敏，基于 MLX 驱动。</a></h4>
+<h4><a href="https://github.com/gh0stkey/Karma">本地化 PII 检测与脱敏，基于 MLX & ONNX Runtime 驱动。</a></h4>
 <h5>作者：<a href="https://github.com/gh0stkey">EvilChen</a></h5>
 </div>
 
@@ -8,9 +8,12 @@ README 版本: \[[English](README.md) | [简体中文](README_CN.md)\]
 
 ## 项目介绍
 
-**Karma** 是一款隐私优先的桌面应用，用于检测和脱敏个人身份信息（PII），基于 [OpenAI Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) 模型。借助 Apple MLX 框架，所有 AI 推理完全在本地设备上运行——您的数据永远不会离开您的设备。
+**Karma** 是一款隐私优先的桌面应用，用于检测和脱敏个人身份信息（PII），基于 [OpenAI Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) 模型。所有 AI 推理完全在本地设备上运行——您的数据永远不会离开您的设备。
 
-Karma 可识别文本中 **9 种类型的 PII** 并替换为标签占位符：
+- **macOS（Apple Silicon）**：基于 MLX 框架实现原生高性能推理
+- **Windows / Linux**：基于 ONNX Runtime，自动 GPU 加速（CUDA / DirectML / CPU 回退）
+
+Karma 可识别文本中 **8 种类型的 PII** 并替换为标签占位符：
 
 | PII 类型 | 占位符 |
 |----------|--------|
@@ -25,7 +28,8 @@ Karma 可识别文本中 **9 种类型的 PII** 并替换为标签占位符：
 
 ## 功能特性
 
-- **实时 PII 检测**：基于 MLX 在 Apple Silicon 上进行 Token 级别分类
+- **实时 PII 检测**：Token 级别分类，平台自适应推理引擎
+- **跨平台**：macOS（MLX）/ Windows（ONNX + CUDA/DirectML）/ Linux（ONNX + CUDA/CPU）
 - **文本脱敏**：一键脱敏，支持自动复制结果到剪贴板
 - **HTTP API 服务**：内置 REST API 服务器（`/health`、`/redact`），可与其他工具集成
 - **脱敏历史**：基于 SQLite 的历史记录，支持无限滚动浏览
@@ -40,27 +44,35 @@ Karma 可识别文本中 **9 种类型的 PII** 并替换为标签占位符：
 | 桌面框架 | Tauri 2（Rust） |
 | 前端 | React + TypeScript + Tailwind CSS |
 | 状态管理 | Zustand |
-| AI 推理 | MLX + MLX Embeddings（Python Sidecar） |
+| AI 推理（macOS） | MLX + MLX Embeddings |
+| AI 推理（Windows/Linux） | ONNX Runtime（CUDA / DirectML / CPU） |
 | HTTP 服务 | Axum |
 | 数据库 | SQLite（rusqlite） |
 | 构建工具 | Vite |
 
 ## 安装
 
-从 [Releases](https://github.com/gh0stkey/Karma/releases) 页面下载最新的 `.dmg` 安装包。
+从 [Releases](https://github.com/gh0stkey/Karma/releases) 页面下载最新安装包：
 
-> **系统要求**：macOS 11.0+ 且搭载 Apple Silicon（M1/M2/M3/M4）
+| 平台 | 文件 | 系统要求 |
+|------|------|---------|
+| macOS | `.dmg` | macOS 11.0+ 且搭载 Apple Silicon（M1/M2/M3/M4） |
+| Windows | `.exe` | Windows 10+（x64） |
+| Linux | `.deb` | Ubuntu 22.04+（x64） |
 
 ## 使用方法
 
 ### 模型下载
 
-从 HuggingFace 下载 MLX 模型：[mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16)
+| 平台 | 模型格式 | 下载链接 |
+|------|---------|---------|
+| macOS（Apple Silicon） | MLX | [mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16) |
+| Windows / Linux | ONNX | [yasserrmd/privacy-filter-ONNX](https://huggingface.co/yasserrmd/privacy-filter-ONNX) |
 
 ### 快速开始
 
 1. 打开 Karma，进入 **模型** 页面
-2. 选择本地 MLX Token Classification 模型目录
+2. 选择本地模型目录（根据平台选择 MLX 或 ONNX 模型）
 3. 等待模型加载完成（状态指示灯变为绿色）
 4. 切换到 **脱敏** 页面，粘贴文本，点击 **脱敏**
 
@@ -96,10 +108,10 @@ curl -X POST http://127.0.0.1:8000/redact \
 # 安装前端依赖
 npm install
 
-# 构建 Sidecar 二进制文件（PyInstaller）
+# 构建 Sidecar 二进制文件（自动按平台选择 MLX 或 ONNX）
 make sidecar
 
-# 构建 Tauri 应用（DMG）
+# 构建 Tauri 应用
 make app
 ```
 

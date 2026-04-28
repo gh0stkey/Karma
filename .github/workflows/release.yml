@@ -9,8 +9,29 @@ permissions:
   contents: write
 
 jobs:
-  build-macos:
-    runs-on: macos-14
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: aarch64-apple-darwin
+            sidecar_pkg: opf_mlx
+            pyproject: pyproject.toml
+            bundle_glob: "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg"
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            sidecar_pkg: opf_onnx
+            pyproject: pyproject_onnx.toml
+            bundle_glob: "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            sidecar_pkg: opf_onnx
+            pyproject: pyproject_onnx.toml
+            bundle_glob: "src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +44,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin
+          targets: ${{ matrix.target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -33,18 +54,35 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: Install frontend dependencies
         run: npm ci
 
       - name: Build sidecar
-        run: make sidecar
+        shell: bash
+        working-directory: src-tauri/sidecar-src
+        run: |
+          UV_PROJECT_FILE=${{ matrix.pyproject }} uv run pyinstaller \
+            --onefile \
+            --name opf-mlx \
+            --collect-all ${{ matrix.sidecar_pkg }} \
+            --collect-all opf_common \
+            ${{ matrix.sidecar_pkg == 'opf_mlx' && '--collect-all mlx --collect-all mlx_embeddings' || '' }} \
+            --console \
+            ${{ matrix.sidecar_pkg }}/__main__.py
+          mkdir -p ../binaries
+          cp dist/opf-mlx${{ runner.os == 'Windows' && '.exe' || '' }} ../binaries/opf-mlx-${{ matrix.target }}${{ runner.os == 'Windows' && '.exe' || '' }}
 
       - name: Build Tauri app
-        run: npm run tauri build -- --target aarch64-apple-darwin
+        run: npm run tauri build -- --target ${{ matrix.target }}
 
-      - name: Upload DMG to release
+      - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          files: ${{ matrix.bundle_glob }}
           generate_release_notes: true

@@ -1,6 +1,6 @@
 <div align="center">
 <img src="src-tauri/icons/logo.png" style="width: 20%" />
-<h4><a href="https://github.com/gh0stkey/Karma">On-device PII Detection & Redaction, Powered by MLX.</a></h4>
+<h4><a href="https://github.com/gh0stkey/Karma">On-device PII Detection & Redaction, Powered by MLX & ONNX Runtime.</a></h4>
 <h5>Author: <a href="https://github.com/gh0stkey">EvilChen</a></h5>
 </div>
 
@@ -8,9 +8,12 @@ README Version: \[[English](README.md) | [简体中文](README_CN.md)\]
 
 ## Project Introduction
 
-**Karma** is a privacy-first desktop application for detecting and redacting Personally Identifiable Information (PII), based on [OpenAI Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) model. Powered by Apple's MLX framework, all AI inference runs entirely on-device — your data never leaves your machine.
+**Karma** is a privacy-first desktop application for detecting and redacting Personally Identifiable Information (PII), based on [OpenAI Privacy Filter](https://huggingface.co/openai-community/openai-privacy-filter) model. All AI inference runs entirely on-device — your data never leaves your machine.
 
-Karma identifies **9 types of PII** in text and replaces them with labeled placeholders:
+- **macOS (Apple Silicon)**: Powered by MLX for native high-performance inference
+- **Windows / Linux**: Powered by ONNX Runtime with automatic GPU acceleration (CUDA / DirectML / CPU fallback)
+
+Karma identifies **8 types of PII** in text and replaces them with labeled placeholders:
 
 | PII Type | Placeholder |
 |----------|-------------|
@@ -25,7 +28,8 @@ Karma identifies **9 types of PII** in text and replaces them with labeled place
 
 ## Features
 
-- **Real-time PII Detection**: Token-level classification powered by MLX on Apple Silicon
+- **Real-time PII Detection**: Token-level classification with platform-optimized inference
+- **Cross-platform**: macOS (MLX) / Windows (ONNX + CUDA/DirectML) / Linux (ONNX + CUDA/CPU)
 - **Text Redaction**: One-click redaction with auto-copy to clipboard
 - **HTTP API Server**: Built-in REST API server (`/health`, `/redact`) for integration with other tools
 - **Redaction History**: SQLite-backed history with infinite scroll browsing
@@ -40,27 +44,35 @@ Karma identifies **9 types of PII** in text and replaces them with labeled place
 | Desktop Framework | Tauri 2 (Rust) |
 | Frontend | React + TypeScript + Tailwind CSS |
 | State Management | Zustand |
-| AI Inference | MLX + MLX Embeddings (Python Sidecar) |
+| AI Inference (macOS) | MLX + MLX Embeddings |
+| AI Inference (Windows/Linux) | ONNX Runtime (CUDA / DirectML / CPU) |
 | HTTP Server | Axum |
 | Database | SQLite (rusqlite) |
 | Build Tool | Vite |
 
 ## Installation
 
-Download the latest `.dmg` from the [Releases](https://github.com/gh0stkey/Karma/releases) page.
+Download the latest release from the [Releases](https://github.com/gh0stkey/Karma/releases) page:
 
-> **Requirements**: macOS 11.0+ with Apple Silicon (M1/M2/M3/M4)
+| Platform | File | Requirements |
+|----------|------|-------------|
+| macOS | `.dmg` | macOS 11.0+ with Apple Silicon (M1/M2/M3/M4) |
+| Windows | `.exe` | Windows 10+ (x64) |
+| Linux | `.deb` | Ubuntu 22.04+ (x64) |
 
 ## Usage
 
 ### Model Download
 
-Download the MLX model from: [mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16)
+| Platform | Model | Link |
+|----------|-------|------|
+| macOS (Apple Silicon) | MLX format | [mlx-community/openai-privacy-filter-bf16](https://huggingface.co/mlx-community/openai-privacy-filter-bf16) |
+| Windows / Linux | ONNX format | [yasserrmd/privacy-filter-ONNX](https://huggingface.co/yasserrmd/privacy-filter-ONNX) |
 
 ### Quick Start
 
 1. Open Karma and navigate to the **Model** page
-2. Select your local MLX token-classification model directory
+2. Select your local model directory (MLX or ONNX depending on your platform)
 3. Wait for the model to load (status indicator turns green)
 4. Switch to the **Redactor** page, paste your text, and click **Redact**
 
@@ -96,10 +108,10 @@ curl -X POST http://127.0.0.1:8000/redact \
 # Install frontend dependencies
 npm install
 
-# Build sidecar binary (PyInstaller)
+# Build sidecar binary (auto-selects MLX or ONNX by platform)
 make sidecar
 
-# Build Tauri app (DMG)
+# Build Tauri app
 make app
 ```
 

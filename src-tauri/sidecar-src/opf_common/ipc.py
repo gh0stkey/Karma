@@ -7,8 +7,7 @@ import os
 import sys
 import time
 import traceback
-
-from opf_mlx.redactor import PIIRedactor
+from typing import Protocol
 
 _ipc_fd = os.dup(sys.stdout.fileno())
 _ipc_out = io.FileIO(_ipc_fd, mode="w")
@@ -16,53 +15,30 @@ _ipc_writer = io.TextIOWrapper(_ipc_out, encoding="utf-8", line_buffering=True)
 
 sys.stdout = sys.stderr
 
-logger = logging.getLogger("opf-mlx.ipc")
+logger = logging.getLogger("opf.ipc")
 
-redactor: PIIRedactor | None = None
+
+class Redactor(Protocol):
+    id2label: dict[str, str]
+
+    def redact(self, text: str): ...
+
+
+redactor: Redactor | None = None
+redactor_factory = None
 
 
 def respond(data: dict):
-    """Write a JSON line to the IPC channel (original stdout) and flush."""
     _ipc_writer.write(json.dumps(data, ensure_ascii=False) + "\n")
     _ipc_writer.flush()
 
 
-def handle_load(params: dict) -> dict:
-    global redactor
-    model_path = params.get("model_path", "")
-    if not model_path:
-        return {"error": "model_path is required"}
+def _extract_model_info(r: Redactor, model_path: str) -> dict:
+    config = getattr(r, "config", getattr(r, "model", r))
+    if hasattr(config, "config"):
+        config = config.config
 
-    t0 = time.monotonic()
-    redactor = PIIRedactor(model_path)
-    elapsed = time.monotonic() - t0
-
-    info = {
-        "name": getattr(
-            redactor.model.config,
-            "_name_or_path",
-            model_path.rstrip("/").split("/")[-1],
-        ),
-        "architecture": getattr(redactor.model.config, "architectures", ["Unknown"])[0]
-        if hasattr(redactor.model.config, "architectures")
-        and redactor.model.config.architectures
-        else getattr(redactor.model.config, "model_type", "Unknown"),
-        "num_labels": len(redactor.id2label),
-        "hidden_size": getattr(redactor.model.config, "hidden_size", 0),
-        "vocab_size": getattr(redactor.model.config, "vocab_size", 0),
-        "max_position_embeddings": getattr(
-            redactor.model.config, "max_position_embeddings", 0
-        ),
-    }
-    return {"ok": True, "info": info, "load_time_ms": round(elapsed * 1000, 1)}
-
-
-def handle_info(_params: dict) -> dict:
-    if redactor is None:
-        return {"error": "Model not loaded"}
-
-    config = redactor.model.config
-    name = getattr(config, "_name_or_path", "Unknown")
+    name = getattr(config, "_name_or_path", model_path.rstrip("/").split("/")[-1])
     if "/" in name:
         name = name.rstrip("/").split("/")[-1]
 
@@ -75,11 +51,31 @@ def handle_info(_params: dict) -> dict:
     return {
         "name": name,
         "architecture": arch,
-        "num_labels": len(redactor.id2label),
+        "num_labels": len(r.id2label),
         "hidden_size": getattr(config, "hidden_size", 0),
         "vocab_size": getattr(config, "vocab_size", 0),
         "max_position_embeddings": getattr(config, "max_position_embeddings", 0),
     }
+
+
+def handle_load(params: dict) -> dict:
+    global redactor
+    model_path = params.get("model_path", "")
+    if not model_path:
+        return {"error": "model_path is required"}
+
+    t0 = time.monotonic()
+    redactor = redactor_factory(model_path)
+    elapsed = time.monotonic() - t0
+
+    info = _extract_model_info(redactor, model_path)
+    return {"ok": True, "info": info, "load_time_ms": round(elapsed * 1000, 1)}
+
+
+def handle_info(_params: dict) -> dict:
+    if redactor is None:
+        return {"error": "Model not loaded"}
+    return _extract_model_info(redactor, "")
 
 
 def handle_redact(params: dict) -> dict:
@@ -125,11 +121,13 @@ HANDLERS = {
 }
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
-    logger.info("OPF MLX sidecar started, waiting for commands on stdin...")
+def main(factory):
+    global redactor_factory
+    redactor_factory = factory
 
-    # Signal readiness
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+    logger.info("OPF sidecar started, waiting for commands on stdin...")
+
     respond({"ready": True})
 
     for line in sys.stdin:
@@ -158,7 +156,3 @@ def main():
         except Exception as e:
             logger.error("Command %s failed: %s", cmd, traceback.format_exc())
             respond({"id": req_id, "error": str(e)})
-
-
-if __name__ == "__main__":
-    main()

@@ -1,1 +1,1 @@
-"""OPF Privacy Filter MLX Server package."""
+"""OPF Privacy Filter - MLX backend."""
