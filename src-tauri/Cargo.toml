@@ -1,6 +1,6 @@
 [package]
 name = "karma"
-version = "0.2.0"
+version = "0.3.0"
 description = "PII Detection & Redaction"
 authors = ["chen"]
 edition = "2021"

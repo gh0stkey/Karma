@@ -18,15 +18,21 @@ else
   TARGET_TRIPLE := x86_64-pc-windows-msvc
   SIDECAR_PKG   := opf_onnx
   PYPROJECT     := pyproject_onnx.toml
+	EXE_EXT       := .exe
 endif
 
-SIDECAR_NAME  := opf-mlx-$(TARGET_TRIPLE)
+SIDECAR_NAME  := opf-mlx-$(TARGET_TRIPLE)$(EXE_EXT)
 
 .PHONY: sidecar
 sidecar:
 	@echo "==> Building sidecar [$(SIDECAR_PKG)] for $(TARGET_TRIPLE)..."
+	@if [ "$(PYPROJECT)" != "pyproject.toml" ]; then \
+		cp $(SIDECAR_SRC)/$(PYPROJECT) $(SIDECAR_SRC)/pyproject.toml; \
+		rm -f $(SIDECAR_SRC)/uv.lock; \
+		cd $(SIDECAR_SRC) && uv lock; \
+	fi
 	cd $(SIDECAR_SRC) && \
-		UV_PROJECT_FILE=$(PYPROJECT) uv run pyinstaller \
+		uv run pyinstaller \
 			--onefile \
 			--name opf-mlx \
 			--collect-all $(SIDECAR_PKG) \
@@ -35,7 +41,7 @@ sidecar:
 			--console \
 			$(SIDECAR_PKG)/__main__.py
 	@mkdir -p $(BINARIES_DIR)
-	cp $(SIDECAR_SRC)/dist/opf-mlx $(BINARIES_DIR)/$(SIDECAR_NAME)
+	cp $(SIDECAR_SRC)/dist/opf-mlx$(EXE_EXT) $(BINARIES_DIR)/$(SIDECAR_NAME)
 	rm -rf $(SIDECAR_SRC)/dist $(SIDECAR_SRC)/build $(SIDECAR_SRC)/*.spec
 	@echo "==> Sidecar binary: $(BINARIES_DIR)/$(SIDECAR_NAME)"
 
@@ -57,8 +63,13 @@ clean:
 .PHONY: sidecar-dev
 sidecar-dev:
 	@echo "==> Creating dev wrapper for sidecar [$(SIDECAR_PKG)]..."
+	@if [ "$(PYPROJECT)" != "pyproject.toml" ]; then \
+		cp $(SIDECAR_SRC)/$(PYPROJECT) $(SIDECAR_SRC)/pyproject.toml; \
+		rm -f $(SIDECAR_SRC)/uv.lock; \
+		cd $(SIDECAR_SRC) && uv lock; \
+	fi
 	@mkdir -p $(BINARIES_DIR)
 	@echo '#!/bin/bash' > $(BINARIES_DIR)/$(SIDECAR_NAME)
-	@echo 'cd "$(CURDIR)/$(SIDECAR_SRC)" && UV_PROJECT_FILE=$(PYPROJECT) uv run python -m $(SIDECAR_PKG) "$$@"' >> $(BINARIES_DIR)/$(SIDECAR_NAME)
+	@echo 'cd "$(CURDIR)/$(SIDECAR_SRC)" && uv run python -m $(SIDECAR_PKG) "$$@"' >> $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@chmod +x $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@echo "==> Dev wrapper: $(BINARIES_DIR)/$(SIDECAR_NAME)"

@@ -18,6 +18,31 @@ from opf_common.types import DetectedSpan, RedactionResult
 logger = logging.getLogger("opf-onnx.redactor")
 
 
+def _find_onnx_model(model_path: str) -> tuple[Path, Path]:
+    path = Path(model_path).expanduser()
+
+    if path.is_file():
+        if path.suffix.lower() != ".onnx":
+            raise FileNotFoundError(f"Expected an .onnx model file, got {path}")
+        return path.parent, path
+
+    if not path.is_dir():
+        raise FileNotFoundError(f"Model path not found: {path}")
+
+    candidates = [p for p in path.rglob("*.onnx") if p.is_file()]
+    if not candidates:
+        raise FileNotFoundError(f"No .onnx model file found in {path}")
+
+    candidates.sort(
+        key=lambda candidate: (
+            0 if candidate.parent == path else 1,
+            len(candidate.relative_to(path).parts),
+            str(candidate.relative_to(path)).lower(),
+        )
+    )
+    return path, candidates[0]
+
+
 def _select_providers() -> list[str]:
     available = ort.get_available_providers()
     logger.info("Available ONNX Runtime providers: %s", available)
@@ -42,10 +67,8 @@ class PIIRedactor:
         logger.info("Loading ONNX model from %s ...", model_path)
         t0 = time.monotonic()
 
-        model_dir = Path(model_path)
-        onnx_path = model_dir / "model.onnx"
-        if not onnx_path.exists():
-            raise FileNotFoundError(f"model.onnx not found in {model_dir}")
+        model_dir, onnx_path = _find_onnx_model(model_path)
+        logger.info("Using ONNX model file: %s", onnx_path)
 
         providers = _select_providers()
         self.session = ort.InferenceSession(str(onnx_path), providers=providers)
@@ -53,7 +76,7 @@ class PIIRedactor:
 
         config_path = model_dir / "config.json"
         if config_path.exists():
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 config_data = json.load(f)
         else:
             config_data = {}
@@ -86,6 +109,9 @@ class PIIRedactor:
         return label.split("-", 1)[-1]
 
     def redact(self, text: str) -> RedactionResult:
+        if not isinstance(text, str):
+            text = str(text)
+
         inputs = self.tokenizer(text, return_tensors="np")
         input_ids = inputs["input_ids"]
         attention_mask = inputs["attention_mask"]

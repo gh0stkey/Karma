@@ -49,7 +49,7 @@
     "config": {
       "title": "Configuration",
       "path": "Model Path",
-      "pathDesc": "Path to the MLX model directory",
+      "pathDesc": "Path to the model directory; .onnx files are detected automatically",
       "browse": "Browse",
       "pathPlaceholder": "Click Browse to select model directory"
     }

@@ -49,7 +49,7 @@
     "config": {
       "title": "配置",
       "path": "模型路径",
-      "pathDesc": "MLX 模型目录路径",
+      "pathDesc": "模型目录路径，会自动检测其中的 .onnx 文件",
       "browse": "浏览",
       "pathPlaceholder": "点击浏览选择模型目录"
     }

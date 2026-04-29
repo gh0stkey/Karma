@@ -24,11 +24,21 @@ jobs:
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
             bundle_glob: "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            sidecar_pkg: opf_onnx
+            pyproject: pyproject_onnx.toml
+            bundle_glob: "src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
             bundle_glob: "src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
+          - os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            sidecar_pkg: opf_onnx
+            pyproject: pyproject_onnx.toml
+            bundle_glob: "src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
 
     runs-on: ${{ matrix.os }}
 

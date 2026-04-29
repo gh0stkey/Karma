@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Karma",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "identifier": "com.chen.karma",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -32,11 +32,21 @@
     "externalBin": ["binaries/opf-mlx"],
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
+      "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/karma.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/karma.desktop"
+      }
+    },
     "macOS": {
       "minimumSystemVersion": "11.0"
     }

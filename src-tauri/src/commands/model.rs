@@ -19,7 +19,14 @@ pub fn delete_model(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 pub fn open_model_folder(app: AppHandle) -> Result<(), String> {
     let manager = app.state::<Arc<ModelManager>>();
-    let dir = manager.model_dir();
+    let path = manager.model_dir();
+    let dir = if path.is_file() {
+        path.parent()
+            .map(|parent| parent.to_path_buf())
+            .unwrap_or(path)
+    } else {
+        path
+    };
     opener::open(dir).map_err(|e| e.to_string())
 }
 

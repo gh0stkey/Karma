@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use serde::Serialize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 
@@ -48,23 +48,48 @@ impl ModelManager {
         })
     }
 
-    fn check_model_files(dir: &PathBuf) -> bool {
-        if !dir.join("config.json").exists() || !dir.join("tokenizer.json").exists() {
-            return false;
+    fn has_extension(path: &Path, extensions: &[&str]) -> bool {
+        path.extension()
+            .and_then(|extension| extension.to_str())
+            .map(|extension| {
+                extensions
+                    .iter()
+                    .any(|expected| extension.eq_ignore_ascii_case(expected))
+            })
+            .unwrap_or(false)
+    }
+
+    fn contains_model_artifact(path: &Path) -> bool {
+        if path.is_file() {
+            return Self::has_extension(path, &["onnx", "safetensors"]);
         }
-        if let Ok(entries) = std::fs::read_dir(dir) {
+
+        if let Ok(entries) = std::fs::read_dir(path) {
             for entry in entries.flatten() {
-                if entry
-                    .path()
-                    .extension()
-                    .map(|e| e == "safetensors")
-                    .unwrap_or(false)
-                {
+                let entry_path = entry.path();
+                if Self::contains_model_artifact(&entry_path) {
                     return true;
                 }
             }
         }
+
         false
+    }
+
+    fn check_model_files(path: &PathBuf) -> bool {
+        let metadata_dir = if path.is_file() {
+            path.parent().unwrap_or(path.as_path())
+        } else {
+            path.as_path()
+        };
+
+        if !metadata_dir.join("config.json").exists()
+            || !metadata_dir.join("tokenizer.json").exists()
+        {
+            return false;
+        }
+
+        Self::contains_model_artifact(path)
     }
 
     pub fn get_state(&self) -> ModelState {
@@ -106,10 +131,14 @@ impl ModelManager {
     pub fn delete_model(&self) -> Result<()> {
         let model_dir = self.model_dir.lock().unwrap().clone();
 
-        if model_dir.exists() {
+        if model_dir.is_dir() {
             std::fs::remove_dir_all(&model_dir)
                 .with_context(|| format!("Failed to delete {}", model_dir.display()))?;
             log::info!("Deleted model directory: {}", model_dir.display());
+        } else if model_dir.is_file() {
+            std::fs::remove_file(&model_dir)
+                .with_context(|| format!("Failed to delete {}", model_dir.display()))?;
+            log::info!("Deleted model file: {}", model_dir.display());
         }
 
         {

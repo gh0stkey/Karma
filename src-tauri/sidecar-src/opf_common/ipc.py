@@ -13,6 +13,11 @@ _ipc_fd = os.dup(sys.stdout.fileno())
 _ipc_out = io.FileIO(_ipc_fd, mode="w")
 _ipc_writer = io.TextIOWrapper(_ipc_out, encoding="utf-8", line_buffering=True)
 
+if hasattr(sys.stdin, "reconfigure"):
+    sys.stdin.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 sys.stdout = sys.stderr
 
 logger = logging.getLogger("opf.ipc")
@@ -61,6 +66,8 @@ def _extract_model_info(r: Redactor, model_path: str) -> dict:
 def handle_load(params: dict) -> dict:
     global redactor
     model_path = params.get("model_path", "")
+    if not isinstance(model_path, str):
+        return {"error": "model_path must be a string"}
     if not model_path:
         return {"error": "model_path is required"}
 
@@ -83,6 +90,8 @@ def handle_redact(params: dict) -> dict:
         return {"error": "Model not loaded"}
 
     text = params.get("text", "")
+    if not isinstance(text, str):
+        return {"error": "text must be a string"}
     if not text:
         return {"error": "text is required"}
 

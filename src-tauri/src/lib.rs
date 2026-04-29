@@ -13,12 +13,14 @@ use tauri::Manager;
 use tauri_plugin_log::{Builder as LogBuilder, Target, TargetKind};
 
 fn resolve_sidecar_path(_app: &tauri::AppHandle) -> std::path::PathBuf {
+    let exe_suffix = std::env::consts::EXE_SUFFIX;
+
     #[cfg(debug_assertions)]
     {
         let triple = env!("TAURI_ENV_TARGET_TRIPLE");
         let dev_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("binaries")
-            .join(format!("opf-mlx-{triple}"));
+            .join(format!("opf-mlx-{triple}{exe_suffix}"));
         if dev_path.exists() {
             log::info!("Sidecar (dev): {}", dev_path.display());
             return dev_path;
@@ -28,7 +30,7 @@ fn resolve_sidecar_path(_app: &tauri::AppHandle) -> std::path::PathBuf {
     if let Ok(exe) = std::env::current_exe() {
         let exe = exe.canonicalize().unwrap_or(exe);
         if let Some(exe_dir) = exe.parent() {
-            let prod_path = exe_dir.join("opf-mlx");
+            let prod_path = exe_dir.join(format!("opf-mlx{exe_suffix}"));
             if prod_path.exists() {
                 log::info!("Sidecar (prod): {}", prod_path.display());
                 return prod_path;
@@ -36,7 +38,7 @@ fn resolve_sidecar_path(_app: &tauri::AppHandle) -> std::path::PathBuf {
         }
     }
 
-    let fallback = std::path::PathBuf::from("opf-mlx");
+    let fallback = std::path::PathBuf::from(format!("opf-mlx{exe_suffix}"));
     log::error!("Sidecar binary not found!");
     fallback
 }
@@ -49,8 +51,7 @@ pub(crate) async fn load_model_via_sidecar(
     let model_path = model_dir.to_string_lossy().to_string();
     let sidecar_clone = sidecar.clone();
 
-    let load_result =
-        tokio::task::spawn_blocking(move || sidecar_clone.load(&model_path)).await;
+    let load_result = tokio::task::spawn_blocking(move || sidecar_clone.load(&model_path)).await;
 
     match load_result {
         Ok(Ok(info)) => {

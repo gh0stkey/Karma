@@ -50,7 +50,19 @@ impl SidecarManager {
     pub fn spawn(binary_path: &std::path::Path) -> Result<Self> {
         log::info!("Spawning sidecar: {}", binary_path.display());
 
-        let mut child = Command::new(binary_path)
+        let mut command = Command::new(binary_path);
+        command
+            .env("PYTHONUTF8", "1")
+            .env("PYTHONIOENCODING", "utf-8");
+
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
