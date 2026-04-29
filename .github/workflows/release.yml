@@ -63,12 +63,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Generate ONNX lock file
+      - name: Prepare ONNX sidecar project
         if: matrix.sidecar_pkg == 'opf_onnx'
         shell: bash
         working-directory: src-tauri/sidecar-src
         run: |
-          cp pyproject_onnx.toml pyproject.toml
+          cp ${{ matrix.pyproject }} pyproject.toml
           rm -f uv.lock
           uv lock
 
