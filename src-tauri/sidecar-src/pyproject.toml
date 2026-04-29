@@ -2,7 +2,7 @@
 name = "opf-privacy-filter-mlx"
 version = "0.1.0"
 description = "PII detection and redaction on Apple Silicon via MLX"
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "mlx-embeddings",
     "pyinstaller",

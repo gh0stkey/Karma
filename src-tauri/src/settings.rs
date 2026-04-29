@@ -39,16 +39,28 @@ impl Default for AppSettings {
 
 macro_rules! read_setting {
     ($store:expr, $key:literal, bool, $default:expr) => {
-        $store.get($key).and_then(|v| v.as_bool()).unwrap_or($default)
+        $store
+            .get($key)
+            .and_then(|v| v.as_bool())
+            .unwrap_or($default)
     };
     ($store:expr, $key:literal, str, $default:expr) => {
-        $store.get($key).and_then(|v| v.as_str().map(String::from)).unwrap_or($default)
+        $store
+            .get($key)
+            .and_then(|v| v.as_str().map(String::from))
+            .unwrap_or($default)
     };
     ($store:expr, $key:literal, u16, $default:expr) => {
-        $store.get($key).and_then(|v| v.as_u64().map(|n| n as u16)).unwrap_or($default)
+        $store
+            .get($key)
+            .and_then(|v| v.as_u64().map(|n| n as u16))
+            .unwrap_or($default)
     };
     ($store:expr, $key:literal, u32, $default:expr) => {
-        $store.get($key).and_then(|v| v.as_u64().map(|n| n as u32)).unwrap_or($default)
+        $store
+            .get($key)
+            .and_then(|v| v.as_u64().map(|n| n as u32))
+            .unwrap_or($default)
     };
 }
 
@@ -64,7 +76,12 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
         server_enabled: read_setting!(store, "server_enabled", bool, defaults.server_enabled),
         server_host: read_setting!(store, "server_host", str, defaults.server_host),
         server_port: read_setting!(store, "server_port", u16, defaults.server_port),
-        server_auto_start: read_setting!(store, "server_auto_start", bool, defaults.server_auto_start),
+        server_auto_start: read_setting!(
+            store,
+            "server_auto_start",
+            bool,
+            defaults.server_auto_start
+        ),
         server_log_limit: read_setting!(store, "server_log_limit", u32, defaults.server_log_limit),
         model_path: read_setting!(store, "model_path", str, defaults.model_path),
         auto_copy_result: read_setting!(store, "auto_copy_result", bool, defaults.auto_copy_result),

@@ -66,8 +66,6 @@ async fn http_logging_middleware(
         Some(String::from_utf8_lossy(&resp_bytes).to_string())
     };
 
-    state.server_state.increment_request_count();
-
     let entry = state.server_state.add_log(
         chrono::Utc::now().to_rfc3339(),
         method,

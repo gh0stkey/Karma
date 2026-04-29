@@ -29,10 +29,10 @@ sidecar:
 	@if [ "$(PYPROJECT)" != "pyproject.toml" ]; then \
 		cp $(SIDECAR_SRC)/$(PYPROJECT) $(SIDECAR_SRC)/pyproject.toml; \
 		rm -f $(SIDECAR_SRC)/uv.lock; \
-		cd $(SIDECAR_SRC) && uv lock; \
+		cd $(SIDECAR_SRC) && uv lock --python 3.12; \
 	fi
 	cd $(SIDECAR_SRC) && \
-		uv run pyinstaller \
+		uv run --python 3.12 pyinstaller \
 			--onefile \
 			--name opf-mlx \
 			--collect-all $(SIDECAR_PKG) \
@@ -66,10 +66,10 @@ sidecar-dev:
 	@if [ "$(PYPROJECT)" != "pyproject.toml" ]; then \
 		cp $(SIDECAR_SRC)/$(PYPROJECT) $(SIDECAR_SRC)/pyproject.toml; \
 		rm -f $(SIDECAR_SRC)/uv.lock; \
-		cd $(SIDECAR_SRC) && uv lock; \
+		cd $(SIDECAR_SRC) && uv lock --python 3.12; \
 	fi
 	@mkdir -p $(BINARIES_DIR)
 	@echo '#!/bin/bash' > $(BINARIES_DIR)/$(SIDECAR_NAME)
-	@echo 'cd "$(CURDIR)/$(SIDECAR_SRC)" && uv run python -m $(SIDECAR_PKG) "$$@"' >> $(BINARIES_DIR)/$(SIDECAR_NAME)
+	@echo 'cd "$(CURDIR)/$(SIDECAR_SRC)" && uv run --python 3.12 python -m $(SIDECAR_PKG) "$$@"' >> $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@chmod +x $(BINARIES_DIR)/$(SIDECAR_NAME)
 	@echo "==> Dev wrapper: $(BINARIES_DIR)/$(SIDECAR_NAME)"

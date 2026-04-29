@@ -2,7 +2,16 @@ use serde::Serialize;
 use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
-use std::time::Instant;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ServerLifecycleStatus {
+    Stopped,
+    Starting,
+    Running,
+    Stopping,
+    Error,
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct HttpLogEntry {
@@ -25,8 +34,7 @@ struct LogStore {
 
 pub struct ServerStateManager {
     running: AtomicBool,
-    started_at: Mutex<Option<Instant>>,
-    request_count: AtomicU64,
+    status: Mutex<ServerLifecycleStatus>,
     next_log_id: AtomicU64,
     log_store: Mutex<LogStore>,
     shutdown_tx: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
@@ -36,8 +44,7 @@ impl ServerStateManager {
     pub fn new(log_limit: usize) -> Self {
         Self {
             running: AtomicBool::new(false),
-            started_at: Mutex::new(None),
-            request_count: AtomicU64::new(0),
+            status: Mutex::new(ServerLifecycleStatus::Stopped),
             next_log_id: AtomicU64::new(1),
             log_store: Mutex::new(LogStore {
                 logs: VecDeque::with_capacity(log_limit),
@@ -47,32 +54,45 @@ impl ServerStateManager {
         }
     }
 
-    pub fn set_running(&self, running: bool) {
-        self.running.store(running, Ordering::SeqCst);
-        if running {
-            *self.started_at.lock().unwrap() = Some(Instant::now());
-        } else {
-            *self.started_at.lock().unwrap() = None;
-        }
+    pub fn status(&self) -> ServerLifecycleStatus {
+        *self.status.lock().unwrap()
+    }
+
+    pub fn set_starting(&self) {
+        self.running.store(false, Ordering::SeqCst);
+        *self.status.lock().unwrap() = ServerLifecycleStatus::Starting;
+    }
+
+    pub fn set_running(&self) {
+        self.running.store(true, Ordering::SeqCst);
+        *self.status.lock().unwrap() = ServerLifecycleStatus::Running;
+    }
+
+    pub fn set_stopping(&self) {
+        *self.status.lock().unwrap() = ServerLifecycleStatus::Stopping;
+    }
+
+    pub fn set_stopped(&self) {
+        self.running.store(false, Ordering::SeqCst);
+        *self.status.lock().unwrap() = ServerLifecycleStatus::Stopped;
+    }
+
+    pub fn set_error(&self) {
+        self.running.store(false, Ordering::SeqCst);
+        *self.status.lock().unwrap() = ServerLifecycleStatus::Error;
+    }
+
+    pub fn is_active(&self) -> bool {
+        matches!(
+            self.status(),
+            ServerLifecycleStatus::Starting
+                | ServerLifecycleStatus::Running
+                | ServerLifecycleStatus::Stopping
+        )
     }
 
     pub fn is_running(&self) -> bool {
         self.running.load(Ordering::SeqCst)
-    }
-
-    pub fn uptime_seconds(&self) -> Option<u64> {
-        self.started_at
-            .lock()
-            .unwrap()
-            .map(|started| started.elapsed().as_secs())
-    }
-
-    pub fn request_count(&self) -> u64 {
-        self.request_count.load(Ordering::SeqCst)
-    }
-
-    pub fn increment_request_count(&self) {
-        self.request_count.fetch_add(1, Ordering::SeqCst);
     }
 
     pub fn set_log_limit(&self, limit: usize) {

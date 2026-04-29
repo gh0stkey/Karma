@@ -117,6 +117,9 @@ pub(crate) async fn start_http_server(app: &tauri::AppHandle) {
     let settings = settings::get_settings(app);
     let server_state = app.state::<Arc<ServerStateManager>>();
 
+    server_state.set_starting();
+    commands::server::emit_server_status(app);
+
     let api_state = Arc::new(server::routes::ApiState {
         server_state: server_state.inner().clone(),
         app_handle: app.clone(),
@@ -131,18 +134,16 @@ pub(crate) async fn start_http_server(app: &tauri::AppHandle) {
         Ok(l) => l,
         Err(e) => {
             log::error!("Failed to bind HTTP server to {}: {}", addr, e);
+            server_state.set_error();
+            commands::server::emit_server_status(app);
             return;
         }
     };
 
     let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
     server_state.set_shutdown_handle(shutdown_tx);
-    server_state.set_running(true);
-
-    {
-        use tauri::Emitter;
-        let _ = app.emit("server-status-changed", ());
-    }
+    server_state.set_running();
+    commands::server::emit_server_status(app);
 
     let serve_result = axum::serve(listener, router)
         .with_graceful_shutdown(async {
@@ -152,15 +153,14 @@ pub(crate) async fn start_http_server(app: &tauri::AppHandle) {
 
     if let Err(e) = serve_result {
         log::error!("HTTP server error: {}", e);
+        server_state.set_error();
+        commands::server::emit_server_status(app);
+        return;
     }
 
-    server_state.set_running(false);
+    server_state.set_stopped();
     log::info!("HTTP server stopped");
-
-    {
-        use tauri::Emitter;
-        let _ = app.emit("server-status-changed", ());
-    }
+    commands::server::emit_server_status(app);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

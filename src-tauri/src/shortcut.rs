@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 fn trigger_open_redact(handle: &AppHandle) {
@@ -24,7 +24,11 @@ pub fn register_shortcut(app: &AppHandle, shortcut_str: &str) {
                 }
             })
     {
-        log::warn!("Failed to register global shortcut '{}': {}", shortcut_str, e);
+        log::warn!(
+            "Failed to register global shortcut '{}': {}",
+            shortcut_str,
+            e
+        );
     }
 }
 

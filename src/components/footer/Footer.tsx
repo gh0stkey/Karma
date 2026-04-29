@@ -2,7 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import type { ModelStatus, ServerStatus, LoadedModelInfo } from "@/lib/types";
+import type {
+  ModelStatus,
+  ServerLifecycleStatus,
+  ServerStatus,
+  LoadedModelInfo,
+} from "@/lib/types";
 
 interface ModelState {
   status: ModelStatus;
@@ -14,6 +19,14 @@ const MODEL_STATUS_DOT: Record<ModelStatus, string> = {
   ready: "bg-green-500",
   loading: "bg-logo-primary animate-pulse",
   loaded: "bg-green-500",
+  error: "bg-red-500",
+};
+
+const SERVER_STATUS_DOT: Record<ServerLifecycleStatus, string> = {
+  stopped: "bg-mid-gray",
+  starting: "bg-logo-primary animate-pulse",
+  running: "bg-green-500",
+  stopping: "bg-logo-primary animate-pulse",
   error: "bg-red-500",
 };
 
@@ -73,6 +86,8 @@ const Footer: React.FC = () => {
   }, [refreshModel, refreshModelInfo, refreshServer]);
 
   const modelLabel = modelInfo?.name ?? t("footer.model");
+  const serverLifecycleStatus = serverStatus?.status ?? "stopped";
+  const serverAddress = `${serverStatus?.host ?? "127.0.0.1"}:${serverStatus?.port ?? 8000}`;
 
   return (
     <div className="w-full border-t border-mid-gray/20 pt-3">
@@ -88,15 +103,15 @@ const Footer: React.FC = () => {
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              serverStatus?.running ? "bg-green-500" : "bg-mid-gray"
-            }`}
+            className={`w-1.5 h-1.5 rounded-full ${SERVER_STATUS_DOT[serverLifecycleStatus]}`}
           />
-          <span>
-            {serverStatus?.running
-              ? `${t("server.status.running")} ${serverStatus.host ?? "127.0.0.1"}:${serverStatus.port ?? 8000}`
-              : t("server.status.stopped")}
+          <span>{t("footer.server")}</span>
+          <span className="text-mid-gray">
+            {t(`server.status.${serverLifecycleStatus}`)}
           </span>
+          {serverLifecycleStatus === "running" && (
+            <span className="font-mono text-mid-gray">{serverAddress}</span>
+          )}
         </div>
       </div>
     </div>

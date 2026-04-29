@@ -22,12 +22,19 @@ export type ModelStatus =
   | "loaded"
   | "error";
 
+export type ServerLifecycleStatus =
+  | "stopped"
+  | "starting"
+  | "running"
+  | "stopping"
+  | "error";
+
 export interface ServerStatus {
   running: boolean;
+  status: ServerLifecycleStatus;
   host: string;
   port: number;
   model_loaded: boolean;
-  request_count?: number;
 }
 
 export interface LoadedModelInfo {

@@ -91,6 +91,13 @@ export const ServerPage: React.FC = () => {
     setHttpLogs([]);
   };
 
+  const serverLifecycleStatus = serverStatus?.status ?? "stopped";
+  const isServerTransitioning =
+    serverLifecycleStatus === "starting" ||
+    serverLifecycleStatus === "stopping";
+  const isServerActive =
+    serverLifecycleStatus === "running" || isServerTransitioning;
+
   const handleServerToggle = async (enabled: boolean) => {
     await updateSetting("server_enabled", enabled);
     try {
@@ -101,6 +108,7 @@ export const ServerPage: React.FC = () => {
       }
     } catch (e) {
       console.warn("Server toggle error:", e);
+      refreshStatus();
     }
     refreshStatus();
   };
@@ -113,7 +121,7 @@ export const ServerPage: React.FC = () => {
           description={t("server.enableDesc")}
           checked={settings.server_enabled}
           onChange={handleServerToggle}
-          isUpdating={isUpdating("server_enabled")}
+          isUpdating={isUpdating("server_enabled") || isServerTransitioning}
           grouped={true}
         />
         <ToggleSwitch
@@ -135,7 +143,7 @@ export const ServerPage: React.FC = () => {
             value={settings.server_host}
             onChange={(e) => updateSetting("server_host", e.target.value)}
             className="w-36 text-center"
-            disabled={serverStatus?.running}
+            disabled={isServerActive}
           />
         </SettingContainer>
         <SettingContainer
@@ -151,7 +159,7 @@ export const ServerPage: React.FC = () => {
               updateSetting("server_port", parseInt(e.target.value) || 8000)
             }
             className="w-24 text-center"
-            disabled={serverStatus?.running}
+            disabled={isServerActive}
           />
         </SettingContainer>
       </SettingsGroup>

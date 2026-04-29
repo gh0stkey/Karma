@@ -66,10 +66,11 @@
     "portDesc": "HTTP 服务的 TCP 端口号",
     "status": {
       "title": "状态",
+      "starting": "启动中...",
       "running": "运行中",
+      "stopping": "停止中...",
       "stopped": "已停止",
-      "uptime": "运行时间",
-      "requests": "已处理请求"
+      "error": "错误"
     },
     "apiRef": {
       "title": "API 参考",
@@ -95,7 +96,8 @@
     "clear": "清空"
   },
   "footer": {
-    "model": "模型"
+    "model": "模型",
+    "server": "服务"
   },
   "settings": {
     "general": {

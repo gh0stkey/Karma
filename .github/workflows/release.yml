@@ -18,26 +18,31 @@ jobs:
             target: aarch64-apple-darwin
             sidecar_pkg: opf_mlx
             pyproject: pyproject.toml
+            bundles: dmg
             bundle_glob: "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg"
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
+            bundles: nsis
             bundle_glob: "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
           - os: windows-11-arm
             target: aarch64-pc-windows-msvc
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
+            bundles: nsis
             bundle_glob: "src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
+            bundles: deb
             bundle_glob: "src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
           - os: ubuntu-22.04-arm
             target: aarch64-unknown-linux-gnu
             sidecar_pkg: opf_onnx
             pyproject: pyproject_onnx.toml
+            bundles: deb
             bundle_glob: "src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
 
     runs-on: ${{ matrix.os }}
@@ -56,6 +61,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -68,7 +78,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: Install frontend dependencies
         run: npm ci
@@ -80,13 +90,13 @@ jobs:
         run: |
           cp ${{ matrix.pyproject }} pyproject.toml
           rm -f uv.lock
-          uv lock
+          uv lock --python 3.12
 
       - name: Build sidecar
         shell: bash
         working-directory: src-tauri/sidecar-src
         run: |
-          uv run pyinstaller \
+          uv run --python 3.12 pyinstaller \
             --onefile \
             --name opf-mlx \
             --collect-all ${{ matrix.sidecar_pkg }} \
@@ -98,7 +108,7 @@ jobs:
           cp dist/opf-mlx${{ runner.os == 'Windows' && '.exe' || '' }} ../binaries/opf-mlx-${{ matrix.target }}${{ runner.os == 'Windows' && '.exe' || '' }}
 
       - name: Build Tauri app
-        run: npm run tauri build -- --target ${{ matrix.target }}
+        run: npm run tauri build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
 
       - name: Upload to release
         uses: softprops/action-gh-release@v2

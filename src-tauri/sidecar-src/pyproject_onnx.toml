@@ -2,7 +2,7 @@
 name = "opf-privacy-filter-onnx"
 version = "0.1.0"
 description = "PII detection and redaction via ONNX Runtime (cross-platform)"
-requires-python = ">=3.11"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "onnxruntime",
     "transformers",

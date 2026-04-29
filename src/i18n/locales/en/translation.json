@@ -66,10 +66,11 @@
     "portDesc": "TCP port number for the HTTP server",
     "status": {
       "title": "Status",
+      "starting": "Starting...",
       "running": "Running",
+      "stopping": "Stopping...",
       "stopped": "Stopped",
-      "uptime": "Uptime",
-      "requests": "Requests Served"
+      "error": "Error"
     },
     "apiRef": {
       "title": "API Reference",
@@ -95,7 +96,8 @@
     "clear": "Clear"
   },
   "footer": {
-    "model": "Model"
+    "model": "Model",
+    "server": "Server"
   },
   "settings": {
     "general": {
