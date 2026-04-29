@@ -141,9 +141,9 @@
     "tagline": "本地 PII 检测与脱敏",
     "poweredBy": "技术栈",
     "tech": {
-      "mlx": "Apple Silicon 机器学习框架",
+      "mlx": "Apple Silicon 推理后端",
+      "onnx": "Windows / Linux 推理后端",
       "tauri": "轻量级桌面运行时",
-      "mlxEmbeddings": "Token 分类引擎",
       "react": "前端 UI 框架"
     },
     "credit": "为隐私而生。"

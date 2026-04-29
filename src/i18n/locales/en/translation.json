@@ -141,9 +141,9 @@
     "tagline": "On-device PII detection & redaction",
     "poweredBy": "Powered by",
     "tech": {
-      "mlx": "Apple Silicon ML framework",
+      "mlx": "Apple Silicon inference backend",
+      "onnx": "Windows / Linux inference backend",
       "tauri": "Lightweight desktop runtime",
-      "mlxEmbeddings": "Token classification engine",
       "react": "Frontend UI framework"
     },
     "credit": "Built with care for privacy."

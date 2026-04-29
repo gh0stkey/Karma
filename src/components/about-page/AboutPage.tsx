@@ -29,8 +29,8 @@ export const AboutPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-2">
           {[
             { name: "MLX", desc: t("about.tech.mlx") },
+            { name: "ONNX Runtime", desc: t("about.tech.onnx") },
             { name: "Tauri", desc: t("about.tech.tauri") },
-            { name: "MLX Embeddings", desc: t("about.tech.mlxEmbeddings") },
             { name: "React", desc: t("about.tech.react") },
           ].map((item) => (
             <div
