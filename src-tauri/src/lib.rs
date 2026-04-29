@@ -9,8 +9,15 @@ use managers::model::ModelManager;
 use managers::server_state::ServerStateManager;
 use managers::sidecar::SidecarManager;
 use std::sync::Arc;
-use tauri::Manager;
+use tauri::{
+    menu::{Menu, MenuItem, PredefinedMenuItem},
+    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    Manager, WindowEvent,
+};
 use tauri_plugin_log::{Builder as LogBuilder, Target, TargetKind};
+
+const TRAY_OPEN_ID: &str = "open";
+const TRAY_QUIT_ID: &str = "quit";
 
 fn resolve_sidecar_path(_app: &tauri::AppHandle) -> std::path::PathBuf {
     let exe_suffix = std::env::consts::EXE_SUFFIX;
@@ -113,6 +120,51 @@ fn initialize_managers(app: &tauri::AppHandle) {
     });
 }
 
+pub(crate) fn show_main_window(app: &tauri::AppHandle) {
+    #[cfg(target_os = "macos")]
+    let _ = app.set_dock_visibility(true);
+
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+fn initialize_tray(app: &tauri::App) -> tauri::Result<()> {
+    let open = MenuItem::with_id(app, TRAY_OPEN_ID, "Open Karma", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, TRAY_QUIT_ID, "Quit", true, None::<&str>)?;
+    let separator = PredefinedMenuItem::separator(app)?;
+    let menu = Menu::with_items(app, &[&open, &separator, &quit])?;
+    let icon = app.default_window_icon().cloned();
+
+    let mut tray = TrayIconBuilder::with_id("main")
+        .tooltip("Karma")
+        .menu(&menu)
+        .show_menu_on_left_click(true)
+        .on_menu_event(|app, event| {
+            if event.id() == TRAY_OPEN_ID {
+                show_main_window(app);
+            } else if event.id() == TRAY_QUIT_ID {
+                app.exit(0);
+            }
+        })
+        .on_tray_icon_event(|tray, event| match event {
+            TrayIconEvent::DoubleClick {
+                button: MouseButton::Left,
+                ..
+            } => show_main_window(tray.app_handle()),
+            _ => {}
+        });
+
+    if let Some(icon) = icon {
+        tray = tray.icon(icon);
+    }
+
+    tray.build(app)?;
+    Ok(())
+}
+
 pub(crate) async fn start_http_server(app: &tauri::AppHandle) {
     let settings = settings::get_settings(app);
     let server_state = app.state::<Arc<ServerStateManager>>();
@@ -183,6 +235,17 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    api.prevent_close();
+                    let _ = window.hide();
+
+                    #[cfg(target_os = "macos")]
+                    let _ = window.app_handle().set_dock_visibility(false);
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::settings::get_app_settings,
             commands::settings::update_setting,
@@ -204,6 +267,8 @@ pub fn run() {
             shortcut::update_global_shortcut,
         ])
         .setup(|app| {
+            initialize_tray(app)?;
+
             let handle = app.handle().clone();
             initialize_managers(&handle);
 

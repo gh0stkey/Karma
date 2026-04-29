@@ -1,12 +1,8 @@
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 fn trigger_open_redact(handle: &AppHandle) {
-    if let Some(win) = handle.get_webview_window("main") {
-        let _ = win.show();
-        let _ = win.unminimize();
-        let _ = win.set_focus();
-    }
+    crate::show_main_window(handle);
     let _ = handle.emit("show-redactor", ());
 }
 
