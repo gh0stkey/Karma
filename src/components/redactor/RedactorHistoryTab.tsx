@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Copy, Trash2, Check, Eraser } from "lucide-react";
-import { SpanBadge } from "../redactor/SpanBadge";
+import { Check, Copy, Eraser, Trash2 } from "lucide-react";
+import { SpanBadge } from "./SpanBadge";
 import { useClipboard } from "@/hooks/useClipboard";
 import type { HistoryEntry } from "@/lib/types";
+import { formatLocalDateTime } from "@/lib/utils/dateTime";
 
 const PAGE_SIZE = 30;
 
-export const HistoryPage: React.FC = () => {
+export const RedactorHistoryTab: React.FC = () => {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,8 +53,8 @@ export const HistoryPage: React.FC = () => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
+      (observerEntries) => {
+        if (observerEntries[0].isIntersecting) {
           const last = entriesRef.current[entriesRef.current.length - 1];
           if (last) loadPage(last.id);
         }
@@ -62,7 +63,7 @@ export const HistoryPage: React.FC = () => {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loading, hasMore, loadPage]);
+  }, [hasMore, loadPage, loading]);
 
   useEffect(() => {
     const unlisten = listen<HistoryEntry>("history-entry-added", (event) => {
@@ -74,7 +75,7 @@ export const HistoryPage: React.FC = () => {
   }, []);
 
   const handleDelete = async (id: number) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+    setEntries((prev) => prev.filter((entry) => entry.id !== id));
     try {
       await invoke("delete_history_entry", { id });
     } catch (e) {
@@ -148,17 +149,15 @@ const HistoryEntryRow: React.FC<{
   return (
     <div className="px-4 py-3 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-mid-gray">{entry.timestamp}</span>
+        <span className="text-xs text-mid-gray">
+          {formatLocalDateTime(entry.timestamp)}
+        </span>
         <div className="flex items-center gap-1">
           <button
             onClick={handleCopy}
             className="p-1 rounded text-text/50 hover:text-logo-primary transition-colors cursor-pointer"
           >
-            {copied ? (
-              <Check width={14} height={14} />
-            ) : (
-              <Copy width={14} height={14} />
-            )}
+            {copied ? <Check width={14} height={14} /> : <Copy width={14} height={14} />}
           </button>
           <button
             onClick={() => onDelete(entry.id)}
@@ -173,8 +172,8 @@ const HistoryEntryRow: React.FC<{
       </p>
       <p className="text-sm select-text cursor-text">{entry.redacted_text}</p>
       <div className="flex items-center gap-2 flex-wrap">
-        {Object.entries(entry.summary).map(([cat, count]) => (
-          <SpanBadge key={cat} category={cat} count={count} />
+        {Object.entries(entry.summary).map(([category, count]) => (
+          <SpanBadge key={category} category={category} count={count} />
         ))}
         <span className="text-xs text-mid-gray tabular-nums ml-auto">
           {entry.latency_ms.toFixed(1)}ms

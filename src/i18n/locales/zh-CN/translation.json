@@ -13,6 +13,10 @@
   },
   "redactor": {
     "title": "脱敏",
+    "tabs": {
+      "redact": "脱敏",
+      "history": "历史"
+    },
     "inputPlaceholder": "输入要脱敏的文本...",
     "redactButton": "脱敏",
     "clearButton": "清空",
@@ -56,6 +60,10 @@
   },
   "server": {
     "config": "配置",
+    "tabs": {
+      "configuration": "配置",
+      "history": "历史"
+    },
     "enable": "启用 HTTP 服务",
     "enableDesc": "启动 HTTP 服务以暴露脱敏 API",
     "autoStart": "随应用启动",

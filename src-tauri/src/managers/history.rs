@@ -35,7 +35,7 @@ impl HistoryManager {
         conn.execute_batch(
             "CREATE TABLE IF NOT EXISTS history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+                timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                 input_text TEXT NOT NULL,
                 redacted_text TEXT NOT NULL,
                 detected_spans TEXT NOT NULL DEFAULT '[]',
@@ -54,10 +54,12 @@ impl HistoryManager {
         let db = self.db.lock().unwrap();
         let spans_json = serde_json::to_string(&result.detected_spans)?;
         let summary_json = serde_json::to_string(&result.summary)?;
+        let timestamp = chrono::Utc::now().to_rfc3339();
 
         db.execute(
-            "INSERT INTO history (input_text, redacted_text, detected_spans, summary, latency_ms) VALUES (?1, ?2, ?3, ?4, ?5)",
+            "INSERT INTO history (timestamp, input_text, redacted_text, detected_spans, summary, latency_ms) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             rusqlite::params![
+                timestamp,
                 result.text,
                 result.redacted_text,
                 spans_json,
@@ -76,7 +78,7 @@ impl HistoryManager {
 
         Ok(HistoryEntry {
             id,
-            timestamp: chrono::Utc::now().to_rfc3339(),
+            timestamp,
             input_text: result.text.clone(),
             redacted_text: result.redacted_text.clone(),
             detected_spans: result.detected_spans.clone(),

@@ -1,13 +1,12 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ShieldCheck, Cpu, Globe, History, Cog, Info } from "lucide-react";
+import { ShieldCheck, Cpu, Globe, Cog, Info } from "lucide-react";
 import KarmaLogo from "./icons/KarmaLogo";
-import { RedactorPage } from "./redactor/RedactorPage";
-import { ModelPage } from "./model-page/ModelPage";
-import { ServerPage } from "./server-page/ServerPage";
-import { HistoryPage } from "./history-page/HistoryPage";
-import { SettingsPage } from "./settings/SettingsPage";
-import { AboutPage } from "./about-page/AboutPage";
+import { RedactorPage } from "./redactor/index";
+import { ModelPage } from "./model/index";
+import { ServerPage } from "./server/index";
+import { SettingsPage } from "./settings/index";
+import { AboutPage } from "./about/index";
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
 
@@ -33,22 +32,16 @@ export const SECTIONS_CONFIG = {
     component: RedactorPage,
     enabled: () => true,
   },
-  model: {
-    labelKey: "sidebar.model",
-    icon: Cpu,
-    component: ModelPage,
-    enabled: () => true,
-  },
   server: {
     labelKey: "sidebar.server",
     icon: Globe,
     component: ServerPage,
     enabled: () => true,
   },
-  history: {
-    labelKey: "sidebar.history",
-    icon: History,
-    component: HistoryPage,
+  model: {
+    labelKey: "sidebar.model",
+    icon: Cpu,
+    component: ModelPage,
     enabled: () => true,
   },
   settings: {

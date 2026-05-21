@@ -13,6 +13,10 @@
   },
   "redactor": {
     "title": "Redactor",
+    "tabs": {
+      "redact": "Redact",
+      "history": "History"
+    },
     "inputPlaceholder": "Enter text to redact...",
     "redactButton": "Redact",
     "clearButton": "Clear",
@@ -56,6 +60,10 @@
   },
   "server": {
     "config": "Configuration",
+    "tabs": {
+      "configuration": "Configuration",
+      "history": "History"
+    },
     "enable": "Enable HTTP Server",
     "enableDesc": "Start an HTTP server to expose the redaction API",
     "autoStart": "Start on Launch",

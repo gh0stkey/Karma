@@ -41,8 +41,8 @@ const Footer: React.FC = () => {
 
   const refreshModel = useCallback(async () => {
     try {
-      const s = await invoke<ModelState>("get_model_state");
-      setModelState(s);
+      const state = await invoke<ModelState>("get_model_state");
+      setModelState(state);
     } catch {}
   }, []);
 
@@ -57,8 +57,8 @@ const Footer: React.FC = () => {
 
   const refreshServer = useCallback(async () => {
     try {
-      const s = await invoke<ServerStatus>("get_server_status");
-      setServerStatus(s);
+      const state = await invoke<ServerStatus>("get_server_status");
+      setServerStatus(state);
     } catch {}
   }, []);
 
@@ -67,21 +67,21 @@ const Footer: React.FC = () => {
     refreshModelInfo();
     refreshServer();
     const interval = setInterval(refreshServer, 5000);
-    const unlisten1 = listen<ModelState>("model-state-changed", (e) => {
-      setModelState(e.payload);
-      if (e.payload.status === "loaded") {
+    const unlistenModel = listen<ModelState>("model-state-changed", (event) => {
+      setModelState(event.payload);
+      if (event.payload.status === "loaded") {
         refreshModelInfo();
       } else {
         setModelInfo(null);
       }
     });
-    const unlisten2 = listen<ServerStatus>("server-status-changed", (e) =>
-      setServerStatus(e.payload),
+    const unlistenServer = listen<ServerStatus>("server-status-changed", (event) =>
+      setServerStatus(event.payload),
     );
     return () => {
       clearInterval(interval);
-      unlisten1.then((fn) => fn());
-      unlisten2.then((fn) => fn());
+      unlistenModel.then((fn) => fn());
+      unlistenServer.then((fn) => fn());
     };
   }, [refreshModel, refreshModelInfo, refreshServer]);
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { Toaster } from "sonner";
 import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
-import Footer from "./components/footer/Footer";
+import { Footer } from "./components/ui";
 import "./App.css";
 
 function App() {
