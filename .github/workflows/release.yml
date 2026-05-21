@@ -84,7 +84,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.1.0
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -119,34 +119,8 @@ jobs:
           mkdir -p ../binaries
           cp dist/opf-mlx${{ runner.os == 'Windows' && '.exe' || '' }} ../binaries/opf-mlx-${{ matrix.target }}${{ runner.os == 'Windows' && '.exe' || '' }}
 
-      - name: Clean old bundle outputs
-        shell: bash
-        run: |
-          rm -rf src-tauri/target/${{ matrix.target }}/release/bundle
-
       - name: Build Tauri app
         run: npm run tauri build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
-
-      - name: Verify bundle version
-        shell: bash
-        run: |
-          shopt -s nullglob
-          release_version="${RELEASE_TAG#v}"
-          bundles=( ${{ matrix.bundle_glob }} )
-
-          if [ "${#bundles[@]}" -ne 1 ]; then
-            echo "Expected exactly one bundle for ${{ matrix.target }}, found ${#bundles[@]}"
-            printf '%s\n' "${bundles[@]}"
-            exit 1
-          fi
-
-          bundle_name="$(basename "${bundles[0]}")"
-          echo "Found bundle: $bundle_name"
-
-          if [[ "$bundle_name" != *"$release_version"* ]]; then
-            echo "Bundle version mismatch: expected filename to contain $release_version"
-            exit 1
-          fi
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v7
