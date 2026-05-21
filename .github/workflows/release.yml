@@ -5,6 +5,14 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build and publish, e.g. v0.1.0"
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
 
 permissions:
   contents: write
@@ -50,6 +58,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -133,5 +143,6 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: release-assets/**
           generate_release_notes: true
