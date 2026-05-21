@@ -12,7 +12,7 @@ use tauri::Manager;
 use tower_http::cors::CorsLayer;
 
 use super::schemas::{HealthResponse, RedactRequest, RedactionResult};
-use crate::managers::server_state::ServerStateManager;
+use crate::managers::server_state::{append_http_log, ServerStateManager};
 use crate::managers::sidecar::SidecarManager;
 
 pub struct ApiState {
@@ -79,6 +79,10 @@ async fn http_logging_middleware(
     {
         use tauri::Emitter;
         let _ = state.app_handle.emit("http-log-entry", &entry);
+    }
+
+    if let Err(e) = append_http_log(&state.app_handle, &entry) {
+        log::warn!("Failed to persist HTTP log entry: {}", e);
     }
 
     Response::from_parts(resp_parts, Body::from(resp_bytes))

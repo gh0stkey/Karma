@@ -1,7 +1,13 @@
+use anyhow::{Context, Result};
 use serde::Serialize;
 use std::collections::VecDeque;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
+use tauri::{AppHandle, Manager};
+
+const HTTP_LOG_FILE_NAME: &str = "http.log";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -38,6 +44,36 @@ pub struct ServerStateManager {
     next_log_id: AtomicU64,
     log_store: Mutex<LogStore>,
     shutdown_tx: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+}
+
+fn http_log_path(app: &AppHandle) -> Result<std::path::PathBuf> {
+    let log_dir = app
+        .path()
+        .app_log_dir()
+        .context("Failed to get app log dir")?;
+    fs::create_dir_all(&log_dir)?;
+    Ok(log_dir.join(HTTP_LOG_FILE_NAME))
+}
+
+pub fn append_http_log(app: &AppHandle, entry: &HttpLogEntry) -> Result<()> {
+    let log_path = http_log_path(app)?;
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)?;
+    serde_json::to_writer(&mut file, entry)?;
+    writeln!(file)?;
+    Ok(())
+}
+
+pub fn clear_http_log_file(app: &AppHandle) -> Result<()> {
+    let log_path = http_log_path(app)?;
+    OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(log_path)?;
+    Ok(())
 }
 
 impl ServerStateManager {

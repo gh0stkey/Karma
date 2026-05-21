@@ -2,7 +2,9 @@ use serde::Serialize;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
-use crate::managers::server_state::{HttpLogEntry, ServerLifecycleStatus, ServerStateManager};
+use crate::managers::server_state::{
+    clear_http_log_file, HttpLogEntry, ServerLifecycleStatus, ServerStateManager,
+};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ServerStatus {
@@ -85,6 +87,10 @@ pub fn get_http_logs(app: AppHandle, limit: Option<usize>) -> Vec<HttpLogEntry> 
 pub fn clear_http_logs(app: AppHandle) {
     if let Some(server_state) = app.try_state::<Arc<ServerStateManager>>() {
         server_state.clear_logs();
+    }
+
+    if let Err(e) = clear_http_log_file(&app) {
+        log::warn!("Failed to clear HTTP log file: {}", e);
     }
 }
 

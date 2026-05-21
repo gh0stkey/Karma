@@ -86,7 +86,7 @@
     }
   },
   "history": {
-    "title": "Redaction History",
+    "title": "History",
     "empty": "No history yet",
     "loading": "Loading...",
     "input": "Input",
@@ -124,14 +124,14 @@
     },
     "server": {
       "title": "Server",
-      "logLimit": "HTTP Log Limit",
+      "logLimit": "Log Limit",
       "logLimitDesc": "Maximum number of HTTP log entries to keep"
     },
     "storage": {
       "title": "Storage",
-      "dataDir": "App Data Directory",
+      "dataDir": "App Data",
       "dataDirDesc": "Where settings, database and model cache are stored",
-      "logDir": "Log Directory",
+      "logDir": "Log",
       "logDirDesc": "Where application logs are stored",
       "open": "Open"
     }
