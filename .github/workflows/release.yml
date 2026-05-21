@@ -13,6 +13,7 @@ on:
 
 env:
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 permissions:
   contents: write
@@ -57,12 +58,12 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: refs/tags/${{ env.RELEASE_TAG }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -73,7 +74,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -83,7 +84,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v8
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -118,11 +119,37 @@ jobs:
           mkdir -p ../binaries
           cp dist/opf-mlx${{ runner.os == 'Windows' && '.exe' || '' }} ../binaries/opf-mlx-${{ matrix.target }}${{ runner.os == 'Windows' && '.exe' || '' }}
 
+      - name: Clean old bundle outputs
+        shell: bash
+        run: |
+          rm -rf src-tauri/target/${{ matrix.target }}/release/bundle
+
       - name: Build Tauri app
         run: npm run tauri build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
 
+      - name: Verify bundle version
+        shell: bash
+        run: |
+          shopt -s nullglob
+          release_version="${RELEASE_TAG#v}"
+          bundles=( ${{ matrix.bundle_glob }} )
+
+          if [ "${#bundles[@]}" -ne 1 ]; then
+            echo "Expected exactly one bundle for ${{ matrix.target }}, found ${#bundles[@]}"
+            printf '%s\n' "${bundles[@]}"
+            exit 1
+          fi
+
+          bundle_name="$(basename "${bundles[0]}")"
+          echo "Found bundle: $bundle_name"
+
+          if [[ "$bundle_name" != *"$release_version"* ]]; then
+            echo "Bundle version mismatch: expected filename to contain $release_version"
+            exit 1
+          fi
+
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundle-${{ matrix.target }}
           path: ${{ matrix.bundle_glob }}
@@ -134,7 +161,7 @@ jobs:
 
     steps:
       - name: Download release artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-assets
           pattern: bundle-*
