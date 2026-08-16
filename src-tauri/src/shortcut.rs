@@ -1,9 +1,8 @@
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 fn trigger_open_redact(handle: &AppHandle) {
-    crate::show_main_window(handle);
-    let _ = handle.emit("show-redactor", ());
+    crate::quick_window::toggle_quick_window(handle);
 }
 
 pub fn register_shortcut(app: &AppHandle, shortcut_str: &str) {

@@ -1,9 +1,9 @@
 [package]
 name = "karma"
-version = "0.6.0"
+version = "1.0.0"
 description = "PII Detection & Redaction"
 authors = ["chen"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 default-run = "karma"
 
@@ -20,6 +20,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 # Tauri
 tauri = { version = "2", features = ["tray-icon"] }
+arboard = "3"
 tauri-plugin-log = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-store = "2"
@@ -41,13 +42,14 @@ tower-http = { version = "0.6", features = ["cors"] }
 anyhow = "1"
 log = "0.4"
 chrono = "0.4"
-opener = "0.7"
+opener = { version = "0.7", features = ["reveal"] }
 rusqlite = { version = "0.37", features = ["bundled"] }
 tokenizers = "0.23"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 mlx-rs = { version = "0.25", features = ["metal", "accelerate"] }
 mlx-sys = "=0.2.0"
+objc2-app-kit = "0.3"
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 ort = "2.0.0-rc.13"

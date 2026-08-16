@@ -46,23 +46,11 @@ export interface LoadedModelInfo {
   vocab_size: number;
 }
 
-export interface HttpLogEntry {
-  id: number;
-  timestamp: string;
-  method: string;
-  path: string;
-  status: number;
-  latency_ms: number;
-  request_body?: string;
-  response_body?: string;
-}
-
 export interface AppSettings {
   server_enabled: boolean;
   server_host: string;
   server_port: number;
   server_auto_start: boolean;
-  server_log_limit: number;
   model_path: string;
   auto_copy_result: boolean;
   save_history: boolean;

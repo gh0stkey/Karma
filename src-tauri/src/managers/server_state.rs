@@ -1,10 +1,9 @@
 use anyhow::{Context, Result};
 use serde::Serialize;
-use std::collections::VecDeque;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tauri::{AppHandle, Manager};
 
 const HTTP_LOG_FILE_NAME: &str = "http.log";
@@ -33,20 +32,14 @@ pub struct HttpLogEntry {
     pub response_body: Option<String>,
 }
 
-struct LogStore {
-    logs: VecDeque<HttpLogEntry>,
-    limit: usize,
-}
-
 pub struct ServerStateManager {
     running: AtomicBool,
     status: Mutex<ServerLifecycleStatus>,
     next_log_id: AtomicU64,
-    log_store: Mutex<LogStore>,
     shutdown_tx: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
 }
 
-fn http_log_path(app: &AppHandle) -> Result<std::path::PathBuf> {
+pub fn http_log_path(app: &AppHandle) -> Result<std::path::PathBuf> {
     let log_dir = app
         .path()
         .app_log_dir()
@@ -66,26 +59,12 @@ pub fn append_http_log(app: &AppHandle, entry: &HttpLogEntry) -> Result<()> {
     Ok(())
 }
 
-pub fn clear_http_log_file(app: &AppHandle) -> Result<()> {
-    let log_path = http_log_path(app)?;
-    OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(log_path)?;
-    Ok(())
-}
-
 impl ServerStateManager {
-    pub fn new(log_limit: usize) -> Self {
+    pub fn new() -> Self {
         Self {
             running: AtomicBool::new(false),
             status: Mutex::new(ServerLifecycleStatus::Stopped),
             next_log_id: AtomicU64::new(1),
-            log_store: Mutex::new(LogStore {
-                logs: VecDeque::with_capacity(log_limit),
-                limit: log_limit,
-            }),
             shutdown_tx: Mutex::new(None),
         }
     }
@@ -127,54 +106,23 @@ impl ServerStateManager {
         )
     }
 
+    /// Ensure the HTTP log file exists (creating parent dirs if needed) so it
+    /// can be revealed in the file manager before any request was logged.
+    pub fn ensure_log_file(app: &AppHandle) -> anyhow::Result<std::path::PathBuf> {
+        let path = http_log_path(app)?;
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir)?;
+        }
+        OpenOptions::new().create(true).append(true).open(&path)?;
+        Ok(path)
+    }
+
     pub fn is_running(&self) -> bool {
         self.running.load(Ordering::SeqCst)
     }
 
-    pub fn set_log_limit(&self, limit: usize) {
-        let mut store = self.log_store.lock().unwrap();
-        store.limit = limit;
-        while store.logs.len() > limit {
-            store.logs.pop_back();
-        }
-    }
-
-    pub fn add_log(
-        &self,
-        timestamp: String,
-        method: String,
-        path: String,
-        status: u16,
-        latency_ms: f64,
-        request_body: Option<String>,
-        response_body: Option<String>,
-    ) -> HttpLogEntry {
-        let entry = HttpLogEntry {
-            id: self.next_log_id.fetch_add(1, Ordering::SeqCst),
-            timestamp,
-            method,
-            path,
-            status,
-            latency_ms,
-            request_body,
-            response_body,
-        };
-        let cloned = entry.clone();
-        let mut store = self.log_store.lock().unwrap();
-        store.logs.push_front(entry);
-        while store.logs.len() > store.limit {
-            store.logs.pop_back();
-        }
-        cloned
-    }
-
-    pub fn get_logs(&self, limit: usize) -> Vec<HttpLogEntry> {
-        let store = self.log_store.lock().unwrap();
-        store.logs.iter().take(limit).cloned().collect()
-    }
-
-    pub fn clear_logs(&self) {
-        self.log_store.lock().unwrap().logs.clear();
+    pub fn next_log_id(&self) -> u64 {
+        self.next_log_id.fetch_add(1, Ordering::SeqCst)
     }
 
     pub fn set_shutdown_handle(&self, tx: tokio::sync::oneshot::Sender<()>) {

@@ -82,24 +82,6 @@ export const SettingsPage: React.FC = () => {
         </SettingContainer>
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.server.title")}>
-        <SettingContainer
-          title={t("settings.server.logLimit")}
-          description={t("settings.server.logLimitDesc")}
-          grouped={true}
-        >
-          <Input
-            variant="compact"
-            type="number"
-            value={settings.server_log_limit}
-            onChange={(e) =>
-              updateSetting("server_log_limit", parseInt(e.target.value) || 100)
-            }
-            className="w-24 text-center"
-          />
-        </SettingContainer>
-      </SettingsGroup>
-
       <SettingsGroup title={t("settings.storage.title")}>
         <SettingContainer
           title={t("settings.storage.dataDir")}

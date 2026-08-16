@@ -1,11 +1,11 @@
 use axum::{
+    Router,
     body::Body,
     extract::State,
     http::{Request, StatusCode},
     middleware::Next,
     response::{Json, Response},
     routing::{get, post},
-    Router,
 };
 use std::sync::Arc;
 use tauri::Manager;
@@ -13,7 +13,7 @@ use tower_http::cors::CorsLayer;
 
 use super::schemas::{HealthResponse, RedactRequest, RedactionResult};
 use crate::inference::InferenceEngine;
-use crate::managers::server_state::{append_http_log, ServerStateManager};
+use crate::managers::server_state::{HttpLogEntry, ServerStateManager, append_http_log};
 
 pub struct ApiState {
     pub server_state: Arc<ServerStateManager>,
@@ -66,20 +66,16 @@ async fn http_logging_middleware(
         Some(String::from_utf8_lossy(&resp_bytes).to_string())
     };
 
-    let entry = state.server_state.add_log(
-        chrono::Utc::now().to_rfc3339(),
+    let entry = HttpLogEntry {
+        id: state.server_state.next_log_id(),
+        timestamp: chrono::Utc::now().to_rfc3339(),
         method,
         path,
         status,
-        (latency_ms * 100.0).round() / 100.0,
+        latency_ms: (latency_ms * 100.0).round() / 100.0,
         request_body,
         response_body,
-    );
-
-    {
-        use tauri::Emitter;
-        let _ = state.app_handle.emit("http-log-entry", &entry);
-    }
+    };
 
     if let Err(e) = append_http_log(&state.app_handle, &entry) {
         log::warn!("Failed to persist HTTP log entry: {}", e);

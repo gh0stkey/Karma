@@ -10,12 +10,12 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::time::Instant;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use tokenizers::Tokenizer;
 
-use config::{load_viterbi_biases, placeholder_map, resolve_model_dir, ModelConfig, ViterbiBiases};
-use decode::{extract_spans, viterbi_decode, LabelSpace};
+use config::{ModelConfig, ViterbiBiases, load_viterbi_biases, placeholder_map, resolve_model_dir};
+use decode::{LabelSpace, extract_spans, viterbi_decode};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DetectedSpan {
@@ -248,5 +248,40 @@ impl InferenceEngine {
             .info
             .clone()
             .context("model not loaded")
+    }
+}
+
+#[cfg(test)]
+mod model_tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    #[ignore = "requires local model files, set KARMA_TEST_MODEL"]
+    fn model_forward_short_and_long_text() {
+        let Ok(dir) = std::env::var("KARMA_TEST_MODEL").map(PathBuf::from) else {
+            return;
+        };
+        let engine = InferenceEngine::new();
+        engine.load_model(&dir).expect("load model");
+
+        let short = engine
+            .redact("Email john@example.com please")
+            .expect("short text redact");
+        assert!(
+            short
+                .detected_spans
+                .iter()
+                .any(|s| s.label == "private_email"),
+            "expected a private_email span, got {:?}",
+            short.detected_spans
+        );
+        assert!(short.redacted_text.contains("[EMAIL]"));
+
+        let long_input =
+            "Contact Alice Smith at alice.smith@corp.example or +1 (555) 123-4567. ".repeat(20);
+        let long = engine.redact(&long_input).expect("long text redact");
+        assert!(long.detected_spans.len() >= 20);
+        assert!(!long.redacted_text.contains("alice.smith@corp.example"));
     }
 }

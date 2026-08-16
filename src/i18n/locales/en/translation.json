@@ -62,7 +62,7 @@
     "config": "Configuration",
     "tabs": {
       "configuration": "Configuration",
-      "history": "History"
+      "integration": "Integration"
     },
     "enable": "Enable HTTP Server",
     "enableDesc": "Start an HTTP server to expose the redaction API",
@@ -83,14 +83,13 @@
     "apiRef": {
       "title": "API Reference",
       "health": "Health check",
-      "redact": "Redact text"
+      "redact": "Redact text",
+      "response": "Response"
     },
-    "httpLog": {
-      "title": "HTTP Log",
-      "empty": "No requests recorded",
-      "request": "Request",
-      "response": "Response",
-      "clear": "Clear"
+    "integration": {
+      "logTitle": "HTTP Access Log",
+      "logFile": "Log File",
+      "logDesc": "Each API request is appended to this file as one JSON object per line (JSON Lines), including method, path, status, latency and request/response bodies. Tail the file or forward it to your log pipeline."
     }
   },
   "history": {
@@ -114,7 +113,7 @@
       "languageDesc": "Interface display language",
       "shortcut": {
         "title": "Global Shortcut",
-        "description": "Open Karma and go to Redactor",
+        "description": "Open the quick redact panel (reads clipboard, Esc to close)",
         "pressKeys": "Press keys...",
         "errors": {
           "set": "Failed to set shortcut: {{error}}"
@@ -129,11 +128,6 @@
       "saveHistoryDesc": "Keep a record of redaction operations",
       "historyLimit": "History Limit",
       "historyLimitDesc": "Maximum number of history entries to keep"
-    },
-    "server": {
-      "title": "Server",
-      "logLimit": "Log Limit",
-      "logLimitDesc": "Maximum number of HTTP log entries to keep"
     },
     "storage": {
       "title": "Storage",
@@ -155,5 +149,10 @@
       "react": "Frontend UI framework"
     },
     "credit": "Built with care for privacy."
+  },
+  "quick": {
+    "inputPlaceholder": "Paste or type text to redact…",
+    "pin": "Keep window open on blur",
+    "close": "Close (Esc)"
   }
 }

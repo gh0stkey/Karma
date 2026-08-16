@@ -1,11 +1,22 @@
 import { useState, useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Toaster } from "sonner";
 import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
 import { Footer } from "./components/ui";
+import { QuickRedactPage } from "./components/quick";
 import "./App.css";
 
+const IS_QUICK_WINDOW = getCurrentWindow().label === "quick";
+
 function App() {
+  if (IS_QUICK_WINDOW) {
+    return <QuickRedactPage />;
+  }
+  return <MainWindow />;
+}
+
+function MainWindow() {
   const [currentSection, setCurrentSection] =
     useState<SidebarSection>("redactor");
 

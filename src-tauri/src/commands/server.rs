@@ -2,9 +2,7 @@ use serde::Serialize;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
-use crate::managers::server_state::{
-    clear_http_log_file, HttpLogEntry, ServerLifecycleStatus, ServerStateManager,
-};
+use crate::managers::server_state::{ServerLifecycleStatus, ServerStateManager};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ServerStatus {
@@ -73,30 +71,17 @@ pub fn stop_server(app: AppHandle) -> Result<(), String> {
     }
 }
 
-#[tauri::command]
-pub fn get_http_logs(app: AppHandle, limit: Option<usize>) -> Vec<HttpLogEntry> {
-    let limit = limit.unwrap_or(100);
-    if let Some(server_state) = app.try_state::<Arc<ServerStateManager>>() {
-        server_state.get_logs(limit)
-    } else {
-        Vec::new()
-    }
-}
-
-#[tauri::command]
-pub fn clear_http_logs(app: AppHandle) {
-    if let Some(server_state) = app.try_state::<Arc<ServerStateManager>>() {
-        server_state.clear_logs();
-    }
-
-    if let Err(e) = clear_http_log_file(&app) {
-        log::warn!("Failed to clear HTTP log file: {}", e);
-    }
-}
-
 pub(crate) fn emit_server_status(app: &AppHandle) {
     use tauri::Emitter;
 
     let status = get_server_status(app.clone());
     let _ = app.emit("server-status-changed", status);
+}
+
+/// Open the HTTP access log file in the system file manager, creating an empty
+/// file first so the button works before any request has been logged.
+#[tauri::command]
+pub fn open_http_log(app: AppHandle) -> Result<(), String> {
+    let path = ServerStateManager::ensure_log_file(&app).map_err(|e| e.to_string())?;
+    opener::reveal(&path).map_err(|e| e.to_string())
 }

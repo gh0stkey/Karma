@@ -1,6 +1,7 @@
 mod commands;
 pub mod inference;
 mod managers;
+mod quick_window;
 mod server;
 mod settings;
 mod shortcut;
@@ -11,9 +12,9 @@ use managers::model::ModelManager;
 use managers::server_state::ServerStateManager;
 use std::sync::Arc;
 use tauri::{
+    Manager, WindowEvent,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    Manager, WindowEvent,
 };
 use tauri_plugin_log::{Builder as LogBuilder, Target, TargetKind};
 
@@ -47,9 +48,7 @@ pub(crate) async fn load_model_with_engine(
 }
 
 fn initialize_managers(app: &tauri::AppHandle) {
-    let settings = settings::get_settings(app);
-
-    let server_state = Arc::new(ServerStateManager::new(settings.server_log_limit as usize));
+    let server_state = Arc::new(ServerStateManager::new());
     app.manage(server_state.clone());
 
     let model_manager =
@@ -210,10 +209,13 @@ pub fn run() {
             commands::model::reload_model,
             commands::model::get_loaded_model_info,
             commands::server::get_server_status,
+            commands::server::open_http_log,
+            quick_window::copy_text,
+            quick_window::hide_quick_window,
+            quick_window::quick_clipboard,
+            quick_window::set_quick_pinned,
             commands::server::start_server,
             commands::server::stop_server,
-            commands::server::get_http_logs,
-            commands::server::clear_http_logs,
             commands::history::get_history_entries,
             commands::history::delete_history_entry,
             commands::history::clear_all_history,

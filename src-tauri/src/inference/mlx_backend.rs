@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::path::Path;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use mlx_rs::fast;
 use mlx_rs::ops;
 use mlx_rs::ops::indexing::IndexOp;
 use mlx_rs::{Array, Dtype, Stream, StreamOrDevice};
 
-use super::config::ModelConfig;
 use super::InferenceBackend;
+use super::config::ModelConfig;
 
 const SWIGLU_ALPHA: f32 = 1.702;
 const SWIGLU_LIMIT: f32 = 7.0;
@@ -239,17 +239,19 @@ impl Experts {
         let total = (n * k) as usize;
 
         let do_sort = total >= 64;
-        let mut idx = indices.reshape_device(&[-1], stream)?;
         let mut inv_order: Option<Array> = None;
 
-        if do_sort {
-            let order = ops::argsort_device(&idx, stream)?;
+        let idx = if do_sort {
+            let flat_idx = indices.reshape_device(&[-1], stream)?;
+            let order = ops::argsort_device(&flat_idx, stream)?;
             let row = order.floor_divide_device(&Array::from(k), stream)?;
             let flat = x.reshape_device(&[b * n, 1, hidden], stream)?;
             x = flat.take_axis_device(&row, 0, stream)?;
             inv_order = Some(ops::argsort_device(&order, stream)?);
-            idx = idx.take_axis_device(&order, 0, stream)?;
-        }
+            flat_idx.take_axis_device(&order, 0, stream)?
+        } else {
+            indices.clone()
+        };
 
         let x_up = self.up_proj.forward(&x, &idx, do_sort, stream)?;
         let x_gate = self.gate_proj.forward(&x, &idx, do_sort, stream)?;

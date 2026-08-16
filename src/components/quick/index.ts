@@ -1,0 +1,1 @@
+export { QuickRedactPage } from "./QuickRedactPage";

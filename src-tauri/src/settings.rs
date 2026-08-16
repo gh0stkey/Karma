@@ -10,7 +10,6 @@ pub struct AppSettings {
     pub server_host: String,
     pub server_port: u16,
     pub server_auto_start: bool,
-    pub server_log_limit: u32,
     pub model_path: String,
     pub auto_copy_result: bool,
     pub save_history: bool,
@@ -26,7 +25,6 @@ impl Default for AppSettings {
             server_host: "127.0.0.1".to_string(),
             server_port: 8000,
             server_auto_start: false,
-            server_log_limit: 100,
             model_path: String::new(),
             auto_copy_result: false,
             save_history: true,
@@ -82,7 +80,6 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
             bool,
             defaults.server_auto_start
         ),
-        server_log_limit: read_setting!(store, "server_log_limit", u32, defaults.server_log_limit),
         model_path: read_setting!(store, "model_path", str, defaults.model_path),
         auto_copy_result: read_setting!(store, "auto_copy_result", bool, defaults.auto_copy_result),
         save_history: read_setting!(store, "save_history", bool, defaults.save_history),

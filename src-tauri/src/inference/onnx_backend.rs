@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use anyhow::{bail, Context, Result};
-use ort::session::{builder::GraphOptimizationLevel, Session};
+use anyhow::{Context, Result, bail};
+use ort::session::{Session, builder::GraphOptimizationLevel};
 use ort::value::Tensor;
 
-use super::config::ModelConfig;
 use super::InferenceBackend;
+use super::config::ModelConfig;
 
 pub struct OnnxBackend {
     session: Session,

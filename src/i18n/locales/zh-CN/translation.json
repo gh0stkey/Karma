@@ -62,7 +62,7 @@
     "config": "配置",
     "tabs": {
       "configuration": "配置",
-      "history": "历史"
+      "integration": "集成"
     },
     "enable": "启用 HTTP 服务",
     "enableDesc": "启动 HTTP 服务以暴露脱敏 API",
@@ -83,14 +83,13 @@
     "apiRef": {
       "title": "API 参考",
       "health": "健康检查",
-      "redact": "文本脱敏"
+      "redact": "文本脱敏",
+      "response": "响应"
     },
-    "httpLog": {
-      "title": "HTTP 日志",
-      "empty": "暂无请求记录",
-      "request": "请求",
-      "response": "响应",
-      "clear": "清空"
+    "integration": {
+      "logTitle": "HTTP 访问日志",
+      "logFile": "日志文件",
+      "logDesc": "每个 API 请求都会以 JSON Lines 格式（每行一个 JSON 对象）追加到该文件，包含方法、路径、状态码、耗时和请求/响应体。可直接 tail 查看或接入日志采集管道。"
     }
   },
   "history": {
@@ -114,7 +113,7 @@
       "languageDesc": "界面显示语言",
       "shortcut": {
         "title": "全局快捷键",
-        "description": "打开 Karma 并进入脱敏界面",
+        "description": "打开快捷脱敏面板（自动读取剪贴板，Esc 关闭）",
         "pressKeys": "请按下快捷键...",
         "errors": {
           "set": "设置快捷键失败: {{error}}"
@@ -129,11 +128,6 @@
       "saveHistoryDesc": "记录脱敏操作历史",
       "historyLimit": "历史上限",
       "historyLimitDesc": "最多保留的历史记录数"
-    },
-    "server": {
-      "title": "服务",
-      "logLimit": "HTTP 日志上限",
-      "logLimitDesc": "最多保留的 HTTP 日志条数"
     },
     "storage": {
       "title": "存储",
@@ -155,5 +149,10 @@
       "react": "前端 UI 框架"
     },
     "credit": "为隐私而生。"
+  },
+  "quick": {
+    "inputPlaceholder": "粘贴或输入要脱敏的文本…",
+    "pin": "失焦时保持窗口打开",
+    "close": "关闭（Esc）"
   }
 }

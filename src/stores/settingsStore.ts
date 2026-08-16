@@ -8,7 +8,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   server_host: "127.0.0.1",
   server_port: 8000,
   server_auto_start: false,
-  server_log_limit: 100,
   model_path: "",
   auto_copy_result: false,
   save_history: true,

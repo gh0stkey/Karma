@@ -237,11 +237,7 @@ mod tests {
                             "S-1" => space.tags[i] == Tag::S(1),
                             _ => false,
                         };
-                        if matches {
-                            10.0
-                        } else {
-                            0.0
-                        }
+                        if matches { 10.0 } else { 0.0 }
                     })
                     .collect()
             })

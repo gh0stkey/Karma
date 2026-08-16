@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown } from "lucide-react";
 import { SettingContainer } from "../ui/SettingContainer";
 import { SettingsGroup } from "../ui/SettingsGroup";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
@@ -28,29 +27,6 @@ export const ServerConfigurationTab: React.FC<ServerConfigurationTabProps> = ({
   onServerToggle,
 }) => {
   const { t } = useTranslation();
-  const [expandedEndpoint, setExpandedEndpoint] = useState<string | null>(null);
-
-  const baseUrl = `http://${settings.server_host}:${settings.server_port}`;
-  const endpoints = [
-    {
-      id: "health",
-      method: "GET",
-      path: "/health",
-      description: t("server.apiRef.health"),
-      curl: `curl ${baseUrl}/health`,
-    },
-    {
-      id: "redact",
-      method: "POST",
-      path: "/redact",
-      description: t("server.apiRef.redact"),
-      curl: `curl -X POST ${baseUrl}/redact \\\n+  -H "Content-Type: application/json" \\\n+  -d '{"text": "My name is John and my email is john@example.com"}'`,
-    },
-  ];
-
-  const toggleEndpoint = (id: string) => {
-    setExpandedEndpoint((prev) => (prev === id ? null : id));
-  };
 
   return (
     <>
@@ -101,37 +77,6 @@ export const ServerConfigurationTab: React.FC<ServerConfigurationTabProps> = ({
             disabled={isServerActive}
           />
         </SettingContainer>
-      </SettingsGroup>
-
-      <SettingsGroup title={t("server.apiRef.title")}>
-        {endpoints.map((endpoint) => (
-          <div key={endpoint.id}>
-            <div
-              className="flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:bg-mid-gray/5 transition-colors"
-              onClick={() => toggleEndpoint(endpoint.id)}
-            >
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold shrink-0 bg-mid-gray/15 text-mid-gray">
-                {endpoint.method}
-              </span>
-              <span className="font-mono text-sm text-text/80">{endpoint.path}</span>
-              <span className="text-xs text-mid-gray ml-1">
-                {endpoint.description}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 text-mid-gray ml-auto shrink-0 transition-transform ${
-                  expandedEndpoint === endpoint.id ? "rotate-180" : ""
-                }`}
-              />
-            </div>
-            {expandedEndpoint === endpoint.id && (
-              <div className="px-4 pb-3 pt-1">
-                <div className="bg-mid-gray/10 rounded-lg p-3 font-mono text-xs text-text/80 whitespace-pre-wrap break-all select-text cursor-text">
-                  {endpoint.curl}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
       </SettingsGroup>
     </>
   );

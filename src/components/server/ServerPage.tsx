@@ -4,22 +4,21 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { SectionTabs } from "../ui/SectionTabs";
 import { ServerConfigurationTab } from "./ServerConfigurationTab";
-import { ServerHistoryTab } from "./ServerHistoryTab";
+import { ServerIntegrationTab } from "./ServerIntegrationTab";
 import { useSettings } from "@/hooks/useSettings";
-import type { ServerStatus, HttpLogEntry } from "@/lib/types";
+import type { ServerStatus } from "@/lib/types";
 
-type ServerTab = "configuration" | "history";
+type ServerTab = "configuration" | "integration";
 
 export const ServerPage: React.FC = () => {
   const { t } = useTranslation();
   const { settings, updateSetting, isUpdating } = useSettings();
   const [activeTab, setActiveTab] = useState<ServerTab>("configuration");
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
-  const [httpLogs, setHttpLogs] = useState<HttpLogEntry[]>([]);
 
   const tabs = [
     { id: "configuration", label: t("server.tabs.configuration") },
-    { id: "history", label: t("server.tabs.history") },
+    { id: "integration", label: t("server.tabs.integration") },
   ] satisfies { id: ServerTab; label: string }[];
 
   const refreshStatus = useCallback(async () => {
@@ -31,42 +30,17 @@ export const ServerPage: React.FC = () => {
     }
   }, []);
 
-  const refreshLogs = useCallback(async () => {
-    try {
-      const logs = await invoke<HttpLogEntry[]>("get_http_logs", {
-        limit: settings.server_log_limit,
-      });
-      setHttpLogs(logs);
-    } catch {
-      // Backend command may not exist yet
-    }
-  }, [settings.server_log_limit]);
-
   useEffect(() => {
     refreshStatus();
-    refreshLogs();
     const interval = setInterval(refreshStatus, 5000);
-    const logInterval = setInterval(refreshLogs, 3000);
     const unlisten = listen<ServerStatus>("server-status-changed", (event) => {
       setServerStatus(event.payload);
     });
-    const unlistenLog = listen<HttpLogEntry>("http-log-entry", (event) => {
-      setHttpLogs((prev) =>
-        [event.payload, ...prev].slice(0, settings.server_log_limit),
-      );
-    });
     return () => {
       clearInterval(interval);
-      clearInterval(logInterval);
       unlisten.then((fn) => fn());
-      unlistenLog.then((fn) => fn());
     };
-  }, [refreshStatus, refreshLogs, settings.server_log_limit]);
-
-  const handleClearLogs = async () => {
-    await invoke("clear_http_logs").catch(() => {});
-    setHttpLogs([]);
-  };
+  }, [refreshStatus]);
 
   const serverLifecycleStatus = serverStatus?.status ?? "stopped";
   const isServerTransitioning =
@@ -110,7 +84,7 @@ export const ServerPage: React.FC = () => {
           onServerToggle={handleServerToggle}
         />
       ) : (
-        <ServerHistoryTab httpLogs={httpLogs} onClearLogs={handleClearLogs} />
+        <ServerIntegrationTab settings={settings} />
       )}
     </div>
   );
