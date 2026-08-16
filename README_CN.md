@@ -44,8 +44,8 @@ Karma 可识别文本中 **8 种类型的 PII** 并替换为标签占位符：
 | 桌面框架 | Tauri 2（Rust） |
 | 前端 | React + TypeScript + Tailwind CSS |
 | 状态管理 | Zustand |
-| AI 推理（macOS） | MLX + MLX Embeddings |
-| AI 推理（Windows/Linux） | ONNX Runtime（CUDA / DirectML / CPU） |
+| AI 推理（macOS） | MLX（经由 [mlx-rs](https://github.com/oxiglade/mlx-rs)，进程内调用） |
+| AI 推理（Windows/Linux） | ONNX Runtime（经由 [ort](https://github.com/pykeio/ort)，CUDA / DirectML / CPU） |
 | HTTP 服务 | Axum |
 | 数据库 | SQLite（rusqlite） |
 | 构建工具 | Vite |
@@ -56,7 +56,7 @@ Karma 可识别文本中 **8 种类型的 PII** 并替换为标签占位符：
 
 | 平台 | 文件 | 系统要求 |
 |------|------|---------|
-| macOS | `.dmg` | macOS 11.0+ 且搭载 Apple Silicon（M1/M2/M3/M4） |
+| macOS | `.dmg` | macOS 15.0+ 且搭载 Apple Silicon（M1/M2/M3/M4） |
 | Windows | `.exe` | Windows 10+（x64） |
 | Linux | `.deb` | Ubuntu 22.04+（x64） |
 
@@ -100,7 +100,7 @@ curl -X POST http://127.0.0.1:8000/redact \
 
 - Node.js >= 20
 - Rust（stable）
-- [uv](https://github.com/astral-sh/uv)（Python 包管理器）
+- CMake 及 C++ 工具链（macOS 上用于编译 mlx-c 封装层）
 
 ### 构建步骤
 
@@ -108,10 +108,7 @@ curl -X POST http://127.0.0.1:8000/redact \
 # 安装前端依赖
 npm install
 
-# 构建 Sidecar 二进制文件（自动按平台选择 MLX 或 ONNX）
-make sidecar
-
-# 构建 Tauri 应用
+# 构建 Tauri 应用（推理引擎已内嵌进应用，无需 Sidecar）
 make app
 ```
 
@@ -120,6 +117,8 @@ make app
 ```bash
 make all
 ```
+
+> 注意：macOS 构建会从 `mlx_metal` PyPI wheel 下载预编译 MLX 运行时（`libmlx.dylib` + `mlx.metallib`，约 130 MB）到 `src-tauri/vendor/mlx-dist/`，由 `make fetch-mlx` 完成（`make app`/`make dev` 会自动触发）。无法访问 pypi.org 时可设置 `PIP_INDEX_URL` 指向镜像源。使用 `make distclean` 可删除该目录。
 
 ## 致谢
 

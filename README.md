@@ -44,8 +44,8 @@ Karma identifies **8 types of PII** in text and replaces them with labeled place
 | Desktop Framework | Tauri 2 (Rust) |
 | Frontend | React + TypeScript + Tailwind CSS |
 | State Management | Zustand |
-| AI Inference (macOS) | MLX + MLX Embeddings |
-| AI Inference (Windows/Linux) | ONNX Runtime (CUDA / DirectML / CPU) |
+| AI Inference (macOS) | MLX (via [mlx-rs](https://github.com/oxiglade/mlx-rs), in-process) |
+| AI Inference (Windows/Linux) | ONNX Runtime (via [ort](https://github.com/pykeio/ort), CUDA / DirectML / CPU) |
 | HTTP Server | Axum |
 | Database | SQLite (rusqlite) |
 | Build Tool | Vite |
@@ -56,7 +56,7 @@ Download the latest release from the [Releases](https://github.com/gh0stkey/Karm
 
 | Platform | File | Requirements |
 |----------|------|-------------|
-| macOS | `.dmg` | macOS 11.0+ with Apple Silicon (M1/M2/M3/M4) |
+| macOS | `.dmg` | macOS 15.0+ with Apple Silicon (M1/M2/M3/M4) |
 | Windows | `.exe` | Windows 10+ (x64) |
 | Linux | `.deb` | Ubuntu 22.04+ (x64) |
 
@@ -100,7 +100,7 @@ curl -X POST http://127.0.0.1:8000/redact \
 
 - Node.js >= 20
 - Rust (stable)
-- [uv](https://github.com/astral-sh/uv) (Python package manager)
+- CMake and a C++ toolchain (builds the mlx-c wrapper on macOS)
 
 ### Steps
 
@@ -108,10 +108,7 @@ curl -X POST http://127.0.0.1:8000/redact \
 # Install frontend dependencies
 npm install
 
-# Build sidecar binary (auto-selects MLX or ONNX by platform)
-make sidecar
-
-# Build Tauri app
+# Build Tauri app (inference engine is compiled into the app; no sidecar needed)
 make app
 ```
 
@@ -120,6 +117,8 @@ Or run the full pipeline:
 ```bash
 make all
 ```
+
+> Note: on macOS the build downloads the prebuilt MLX runtime (`libmlx.dylib` + `mlx.metallib`, ~130 MB) from the `mlx_metal` PyPI wheel into `src-tauri/vendor/mlx-dist/` via `make fetch-mlx` (also triggered automatically by `make app`/`make dev`). Set `PIP_INDEX_URL` to a PyPI mirror if pypi.org is unreachable. Remove it with `make distclean`.
 
 ## Acknowledgements
 

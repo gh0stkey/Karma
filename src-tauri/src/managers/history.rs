@@ -4,7 +4,7 @@ use serde::Serialize;
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 
-use crate::managers::sidecar::RedactionResult;
+use crate::inference::RedactionResult;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct HistoryEntry {
@@ -12,7 +12,7 @@ pub struct HistoryEntry {
     pub timestamp: String,
     pub input_text: String,
     pub redacted_text: String,
-    pub detected_spans: Vec<crate::managers::sidecar::DetectedSpan>,
+    pub detected_spans: Vec<crate::inference::DetectedSpan>,
     pub summary: std::collections::HashMap<String, u32>,
     pub latency_ms: f64,
 }

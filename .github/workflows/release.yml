@@ -26,32 +26,22 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
-            sidecar_pkg: opf_mlx
-            pyproject: pyproject.toml
             bundles: dmg
             bundle_glob: "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg"
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            sidecar_pkg: opf_onnx
-            pyproject: pyproject_onnx.toml
             bundles: nsis
             bundle_glob: "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
           - os: windows-11-arm
             target: aarch64-pc-windows-msvc
-            sidecar_pkg: opf_onnx
-            pyproject: pyproject_onnx.toml
             bundles: nsis
             bundle_glob: "src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            sidecar_pkg: opf_onnx
-            pyproject: pyproject_onnx.toml
             bundles: deb
             bundle_glob: "src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
           - os: ubuntu-22.04-arm
             target: aarch64-unknown-linux-gnu
-            sidecar_pkg: opf_onnx
-            pyproject: pyproject_onnx.toml
             bundles: deb
             bundle_glob: "src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
 
@@ -73,18 +63,10 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -95,29 +77,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Prepare ONNX sidecar project
-        if: matrix.sidecar_pkg == 'opf_onnx'
-        shell: bash
-        working-directory: src-tauri/sidecar-src
-        run: |
-          cp ${{ matrix.pyproject }} pyproject.toml
-          rm -f uv.lock
-          uv lock --python 3.12
-
-      - name: Build sidecar
-        shell: bash
-        working-directory: src-tauri/sidecar-src
-        run: |
-          uv run --python 3.12 pyinstaller \
-            --onefile \
-            --name opf-mlx \
-            --collect-all ${{ matrix.sidecar_pkg }} \
-            --collect-all opf_common \
-            ${{ matrix.sidecar_pkg == 'opf_mlx' && '--collect-all mlx --collect-all mlx_embeddings' || '' }} \
-            --console \
-            ${{ matrix.sidecar_pkg }}/__main__.py
-          mkdir -p ../binaries
-          cp dist/opf-mlx${{ runner.os == 'Windows' && '.exe' || '' }} ../binaries/opf-mlx-${{ matrix.target }}${{ runner.os == 'Windows' && '.exe' || '' }}
+      - name: Fetch MLX runtime
+        if: runner.os == 'macOS'
+        run: bash src-tauri/vendor/fetch-mlx-dist.sh
 
       - name: Build Tauri app
         run: npm run tauri build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}

@@ -29,7 +29,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": ["binaries/opf-mlx"],
     "icon": [
       "icons/32x32.png",
       "icons/64x64.png",
@@ -48,7 +47,7 @@
       }
     },
     "macOS": {
-      "minimumSystemVersion": "11.0"
+      "minimumSystemVersion": "15.0"
     }
   }
 }

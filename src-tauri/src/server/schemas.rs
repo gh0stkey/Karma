@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub use crate::managers::sidecar::RedactionResult;
+pub use crate::inference::RedactionResult;
 
 #[derive(Debug, Deserialize)]
 pub struct RedactRequest {

@@ -1,13 +1,14 @@
 mod commands;
+pub mod inference;
 mod managers;
 mod server;
 mod settings;
 mod shortcut;
 
+use inference::InferenceEngine;
 use managers::history::HistoryManager;
 use managers::model::ModelManager;
 use managers::server_state::ServerStateManager;
-use managers::sidecar::SidecarManager;
 use std::sync::Arc;
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
@@ -19,55 +20,24 @@ use tauri_plugin_log::{Builder as LogBuilder, Target, TargetKind};
 const TRAY_OPEN_ID: &str = "open";
 const TRAY_QUIT_ID: &str = "quit";
 
-fn resolve_sidecar_path(_app: &tauri::AppHandle) -> std::path::PathBuf {
-    let exe_suffix = std::env::consts::EXE_SUFFIX;
-
-    #[cfg(debug_assertions)]
-    {
-        let triple = env!("TAURI_ENV_TARGET_TRIPLE");
-        let dev_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("binaries")
-            .join(format!("opf-mlx-{triple}{exe_suffix}"));
-        if dev_path.exists() {
-            log::info!("Sidecar (dev): {}", dev_path.display());
-            return dev_path;
-        }
-    }
-
-    if let Ok(exe) = std::env::current_exe() {
-        let exe = exe.canonicalize().unwrap_or(exe);
-        if let Some(exe_dir) = exe.parent() {
-            let prod_path = exe_dir.join(format!("opf-mlx{exe_suffix}"));
-            if prod_path.exists() {
-                log::info!("Sidecar (prod): {}", prod_path.display());
-                return prod_path;
-            }
-        }
-    }
-
-    let fallback = std::path::PathBuf::from(format!("opf-mlx{exe_suffix}"));
-    log::error!("Sidecar binary not found!");
-    fallback
-}
-
-pub(crate) async fn load_model_via_sidecar(
-    sidecar: &Arc<SidecarManager>,
+pub(crate) async fn load_model_with_engine(
+    engine: &Arc<InferenceEngine>,
     manager: &Arc<ModelManager>,
 ) {
     let model_dir = manager.model_dir();
-    let model_path = model_dir.to_string_lossy().to_string();
-    let sidecar_clone = sidecar.clone();
+    let engine_clone = engine.clone();
 
-    let load_result = tokio::task::spawn_blocking(move || sidecar_clone.load(&model_path)).await;
+    let load_result =
+        tokio::task::spawn_blocking(move || engine_clone.load_model(&model_dir)).await;
 
     match load_result {
         Ok(Ok(info)) => {
             manager.set_loaded();
-            log::info!("Model loaded via sidecar: {}", info.name);
+            log::info!("Model loaded: {}", info.name);
         }
         Ok(Err(e)) => {
             manager.set_error();
-            log::warn!("Failed to load model via sidecar: {}", e);
+            log::warn!("Failed to load model: {}", e);
         }
         Err(e) => {
             manager.set_error();
@@ -91,31 +61,14 @@ fn initialize_managers(app: &tauri::AppHandle) {
     app.manage(model_manager.clone());
     app.manage(history_manager.clone());
 
-    let handle = app.clone();
+    let engine = Arc::new(InferenceEngine::new());
+    app.manage(engine.clone());
+
     let manager = model_manager.clone();
-    let sidecar_path = resolve_sidecar_path(app);
 
     tauri::async_runtime::spawn(async move {
-        let sidecar_path_clone = sidecar_path.clone();
-        let spawn_result =
-            tokio::task::spawn_blocking(move || SidecarManager::spawn(&sidecar_path_clone)).await;
-
-        match spawn_result {
-            Ok(Ok(sidecar)) => {
-                let sidecar = Arc::new(sidecar);
-                handle.manage(sidecar.clone());
-                log::info!("MLX sidecar spawned successfully");
-
-                if manager.is_available() {
-                    load_model_via_sidecar(&sidecar, &manager).await;
-                }
-            }
-            Ok(Err(e)) => {
-                log::error!("Failed to spawn sidecar: {}", e);
-            }
-            Err(e) => {
-                log::error!("Sidecar spawn task panicked: {}", e);
-            }
+        if manager.is_available() {
+            load_model_with_engine(&engine, &manager).await;
         }
     });
 }

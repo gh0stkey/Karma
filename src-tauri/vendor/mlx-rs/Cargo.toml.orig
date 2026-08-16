@@ -1,0 +1,55 @@
+[package]
+name = "mlx-rs"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+documentation.workspace = true
+description = "Unofficial rust wrapper for Apple's mlx machine learning library."
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = [
+  "aarch64-apple-darwin",
+  "aarch64-apple-ios",
+  "aarch64-apple-ios-sim",
+]
+
+[dependencies]
+mlx-sys.workspace = true
+mlx-internal-macros.workspace = true
+mlx-macros.workspace = true
+dyn-clone.workspace = true
+half.workspace = true
+mach-sys.workspace = true
+num-complex.workspace = true
+num_enum.workspace = true
+num-traits.workspace = true
+paste.workspace = true
+smallvec.workspace = true
+strum.workspace = true
+thiserror.workspace = true
+libc.workspace = true
+parking_lot.workspace = true
+itertools.workspace = true
+
+# optional dependencies
+safetensors = { workspace = true, optional = true }
+bytemuck = { workspace = true, optional = true, features = ["extern_crate_std"] }
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+float_eq.workspace = true
+tempfile.workspace = true
+
+[features]
+default = ["accelerate", "metal"]
+
+accelerate = ["mlx-sys/accelerate"]
+metal = ["mlx-sys/metal"]
+
+# Enables conversion between `Array` and `safetensors::TensorView`
+safetensors = ["dep:safetensors", "dep:bytemuck"]

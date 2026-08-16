@@ -1,19 +1,19 @@
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
 
+use crate::inference::{InferenceEngine, RedactionResult};
 use crate::managers::history::HistoryManager;
-use crate::managers::sidecar::{RedactionResult, SidecarManager};
 
 #[tauri::command]
 pub async fn redact_text(app: AppHandle, text: String) -> Result<RedactionResult, String> {
-    let sidecar = app
-        .try_state::<Arc<SidecarManager>>()
+    let engine = app
+        .try_state::<Arc<InferenceEngine>>()
         .ok_or("Model not loaded")?;
 
-    let sidecar = sidecar.inner().clone();
+    let engine = engine.inner().clone();
     let text_clone = text.clone();
 
-    let result = tokio::task::spawn_blocking(move || sidecar.redact(&text_clone))
+    let result = tokio::task::spawn_blocking(move || engine.redact(&text_clone))
         .await
         .map_err(|e| format!("Task join error: {}", e))?
         .map_err(|e| e.to_string())?;

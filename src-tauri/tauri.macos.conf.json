@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "resources": {
+      "vendor/mlx-dist/lib/libmlx.dylib": "libmlx.dylib",
+      "vendor/mlx-dist/lib/mlx.metallib": "mlx.metallib"
+    }
+  }
+}

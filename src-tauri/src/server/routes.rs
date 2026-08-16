@@ -12,8 +12,8 @@ use tauri::Manager;
 use tower_http::cors::CorsLayer;
 
 use super::schemas::{HealthResponse, RedactRequest, RedactionResult};
+use crate::inference::InferenceEngine;
 use crate::managers::server_state::{append_http_log, ServerStateManager};
-use crate::managers::sidecar::SidecarManager;
 
 pub struct ApiState {
     pub server_state: Arc<ServerStateManager>,
@@ -91,8 +91,8 @@ async fn http_logging_middleware(
 async fn health(State(state): State<Arc<ApiState>>) -> Json<HealthResponse> {
     let model_loaded = state
         .app_handle
-        .try_state::<Arc<SidecarManager>>()
-        .map(|s| s.is_healthy())
+        .try_state::<Arc<InferenceEngine>>()
+        .map(|e| e.is_model_loaded())
         .unwrap_or(false);
     Json(HealthResponse {
         status: "ok".to_string(),
@@ -104,15 +104,18 @@ async fn redact(
     State(state): State<Arc<ApiState>>,
     Json(req): Json<RedactRequest>,
 ) -> Result<Json<RedactionResult>, (StatusCode, String)> {
-    let sidecar = state.app_handle.try_state::<Arc<SidecarManager>>().ok_or((
-        StatusCode::SERVICE_UNAVAILABLE,
-        "Sidecar not running".to_string(),
-    ))?;
+    let engine = state
+        .app_handle
+        .try_state::<Arc<InferenceEngine>>()
+        .ok_or((
+            StatusCode::SERVICE_UNAVAILABLE,
+            "Inference engine not available".to_string(),
+        ))?;
 
-    let sidecar = sidecar.inner().clone();
+    let engine = engine.inner().clone();
     let text = req.text;
 
-    let result = tokio::task::spawn_blocking(move || sidecar.redact(&text))
+    let result = tokio::task::spawn_blocking(move || engine.redact(&text))
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;

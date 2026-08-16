@@ -26,8 +26,8 @@ pub fn get_server_status(app: AppHandle) -> ServerStatus {
     };
 
     let model_loaded = app
-        .try_state::<Arc<crate::managers::sidecar::SidecarManager>>()
-        .map(|s| s.is_healthy())
+        .try_state::<Arc<crate::inference::InferenceEngine>>()
+        .map(|e| e.is_model_loaded())
         .unwrap_or(false);
 
     ServerStatus {
