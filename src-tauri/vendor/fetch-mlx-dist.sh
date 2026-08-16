@@ -28,11 +28,12 @@ EOF
 
 X="$TMP/x"
 rm -rf "$DEST"
-mkdir -p "$DEST/lib" "$DEST/include" "$DEST/share/cmake"
+mkdir -p "$DEST/lib" "$DEST/share/cmake"
 
 cp "$(find "$X" -name libmlx.dylib | head -1)" "$DEST/lib/"
 cp "$(find "$X" -name mlx.metallib | head -1)" "$DEST/lib/"
-cp -R "$(dirname "$(find "$X" -name mlx.h -path '*mlx*' | head -1)")/" "$DEST/include/"
+INCLUDE_DIR="$(dirname "$(dirname "$(find "$X" -name mlx.h -path '*mlx*' | head -1)")")"
+cp -R "$INCLUDE_DIR" "$DEST/"
 cp -R "$(dirname "$(find "$X" -name MLXConfig.cmake | head -1)")" "$DEST/share/cmake/MLX"
 
 echo "==> Installed to $DEST"

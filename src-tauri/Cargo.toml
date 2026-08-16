@@ -61,6 +61,7 @@ onnx-directml = ["ort/directml"]
 [patch.crates-io]
 mlx-sys = { path = "vendor/mlx-sys" }
 mlx-rs = { path = "vendor/mlx-rs" }
+esaxx-rs = { path = "vendor/esaxx-rs" }
 
 [profile.release]
 lto = true
